@@ -1,52 +1,49 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import Head from "next/head"
+import Header from "../components/Header"
+import SearchBar from "../components/SearchBar"
+import CategoryNav from "../components/CategoryNav"
+import FeaturedProducts from "../components/FeaturedProducts"
+import Footer from "../components/Footer"
 
 export default function Home() {
   return (
-    <div className={styles.container}>
+    <div>
       <Head>
-        <title>MarketAI - 이베이 스타일 마켓플레이스</title>
-        <meta name="description" content="이베이 스타일 온라인 마켓플레이스" />
+        <title>MarketAI - 이베이 스타일 온라인 마켓플레이스</title>
+        <meta name="description" content="안전하고 편리한 온라인 쇼핑몰" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          🛒 MarketAI에 오신 것을 환영합니다!
-        </h1>
+      <Header />
+      <SearchBar />
+      <CategoryNav />
 
-        <p className={styles.description}>
-          이베이 스타일 온라인 마켓플레이스
-        </p>
+      <main className="container mx-auto px-4 py-8">
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">오늘의 특가</h2>
+          <FeaturedProducts />
+        </section>
 
-        <div className={styles.grid}>
-          <div className={styles.card}>
-            <h2>상품 판매 &rarr;</h2>
-            <p>당신의 상품을 쉽게 판매하세요</p>
+        <section className="mb-8">
+          <h2 className="text-2xl font-bold mb-4">인기 카테고리</h2>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="bg-gray-100 p-4 rounded-lg text-center">
+              <h3 className="font-semibold">전자제품</h3>
+            </div>
+            <div className="bg-gray-100 p-4 rounded-lg text-center">
+              <h3 className="font-semibold">패션</h3>
+            </div>
+            <div className="bg-gray-100 p-4 rounded-lg text-center">
+              <h3 className="font-semibold">홈&가든</h3>
+            </div>
+            <div className="bg-gray-100 p-4 rounded-lg text-center">
+              <h3 className="font-semibold">스포츠</h3>
+            </div>
           </div>
-
-          <div className={styles.card}>
-            <h2>상품 구매 &rarr;</h2>
-            <p>다양한 상품을 저렴하게 구매하세요</p>
-          </div>
-
-          <div className={styles.card}>
-            <h2>경매 참여 &rarr;</h2>
-            <p>실시간 경매에 참여하세요</p>
-          </div>
-
-          <div className={styles.card}>
-            <h2>안전 거래 &rarr;</h2>
-            <p>안전하고 신뢰할 수 있는 거래</p>
-          </div>
-        </div>
+        </section>
       </main>
 
-      <footer className={styles.footer}>
-        <p>
-          Powered by MarketAI Team
-        </p>
-      </footer>
+      <Footer />
     </div>
   )
 }
