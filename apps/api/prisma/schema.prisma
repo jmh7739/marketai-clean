@@ -1,0 +1,160 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// 사용자 모델
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  name          String?
+  phone         String?   @unique
+  profileImage  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isVerified    Boolean   @default(false)
+  
+  // 관계
+  products      Product[]
+  bids          Bid[]
+  transactions  Transaction[]
+  pickupLocations PickupLocation[]
+  
+  @@map("users")
+}
+
+// 카테고리 모델
+model Category {
+  id          String    @id @default(cuid())
+  name        String
+  parentId    String?
+  parent      Category? @relation("CategoryToCategory", fields: [parentId], references: [id])
+  children    Category[] @relation("CategoryToCategory")
+  products    Product[]
+  createdAt   DateTime  @default(now())
+  
+  @@map("categories")
+}
+
+// 상품 모델
+model Product {
+  id            String    @id @default(cuid())
+  title         String
+  description   String?
+  condition     String    // 상품 상태
+  categoryId    String
+  category      Category  @relation(fields: [categoryId], references: [id])
+  images        ProductImage[]
+  startingPrice Float
+  buyNowPrice   Float?
+  sellerId      String
+  seller        User      @relation(fields: [sellerId], references: [id])
+  status        String    @default("DRAFT") // DRAFT, ACTIVE, SOLD, CANCELLED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // 관계
+  auction       Auction?
+  
+  @@map("products")
+}
+
+// 상품 이미지 모델
+model ProductImage {
+  id          String    @id @default(cuid())
+  productId   String
+  product     Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  url         String
+  order       Int       @default(0)
+  createdAt   DateTime  @default(now())
+  
+  @@map("product_images")
+}
+
+// 경매 모델
+model Auction {
+  id            String    @id @default(cuid())
+  productId     String    @unique
+  product       Product   @relation(fields: [productId], references: [id], onDelete: Cascade)
+  startTime     DateTime
+  endTime       DateTime
+  currentPrice  Float
+  status        String    @default("PENDING") // PENDING, ACTIVE, ENDED, CANCELLED
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // 관계
+  bids          Bid[]
+  transaction   Transaction?
+  
+  @@map("auctions")
+}
+
+// 입찰 모델
+model Bid {
+  id            String    @id @default(cuid())
+  auctionId     String
+  auction       Auction   @relation(fields: [auctionId], references: [id], onDelete: Cascade)
+  bidderId      String
+  bidder        User      @relation(fields: [bidderId], references: [id])
+  amount        Float
+  createdAt     DateTime  @default(now())
+  
+  @@map("bids")
+}
+
+// 거래 모델
+model Transaction {
+  id            String    @id @default(cuid())
+  auctionId     String    @unique
+  auction       Auction   @relation(fields: [auctionId], references: [id])
+  buyerId       String
+  buyer         User      @relation(fields: [buyerId], references: [id])
+  amount        Float
+  status        String    @default("PENDING") // PENDING, PAID, COMPLETED, CANCELLED
+  paymentMethod String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  
+  // 관계
+  pickup        Pickup?
+  
+  @@map("transactions")
+}
+
+// 픽업 위치 모델
+model PickupLocation {
+  id            String    @id @default(cuid())
+  userId        String
+  user          User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  name          String
+  address       String
+  latitude      Float?
+  longitude     Float?
+  isDefault     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  
+  // 관계
+  pickups       Pickup[]
+  
+  @@map("pickup_locations")
+}
+
+// 픽업 모델
+model Pickup {
+  id                String    @id @default(cuid())
+  transactionId     String    @unique
+  transaction       Transaction @relation(fields: [transactionId], references: [id], onDelete: Cascade)
+  pickupLocationId  String
+  pickupLocation    PickupLocation @relation(fields: [pickupLocationId], references: [id])
+  scheduledTime     DateTime?
+  status            String    @default("PENDING") // PENDING, SCHEDULED, COMPLETED, CANCELLED
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  
+  @@map("pickups")
+}

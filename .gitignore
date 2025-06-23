@@ -1,0 +1,33 @@
+# Python
+venv/
+__pycache__/
+*.pyc
+*.pyd
+*.so
+*.egg-info/
+
+# Node.js
+node_modules/
+.next/
+dist/
+build/
+
+# Logs
+*.log
+
+# Environment
+.env*
+
+# Cache
+.cache/
+.npm/
+.yarn/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Large files
+*.zip
+*.tar.gz
+*.rar
