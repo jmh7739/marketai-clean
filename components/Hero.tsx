@@ -1,149 +1,101 @@
 "use client"
-import { useState, useEffect } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+
+import type React from "react"
+
 import { Button } from "@/components/ui/button"
-import Link from "next/link"
+import { Search, TrendingUp, Shield, Zap } from "lucide-react"
+import SafeLink from "@/components/SafeLink"
+import { useState } from "react"
+import { useAppNavigation } from "@/lib/navigation"
 
-const heroSlides = [
-  {
-    id: 1,
-    title: "AI가 도와주는 스마트 경매",
-    subtitle: "사진만 올려도 자동으로 상품 정보를 분석해드려요",
-    image: "/placeholder.svg?height=400&width=800&text=AI+Smart+Auction",
-    cta: "지금 판매하기",
-    link: "/sell",
-    bgColor: "from-blue-600 to-purple-600",
-  },
-  {
-    id: 2,
-    title: "실시간 경매의 짜릿함",
-    subtitle: "투명하고 공정한 경매 시스템으로 최고가에 판매하세요",
-    image: "/placeholder.svg?height=400&width=800&text=Live+Auction",
-    cta: "경매 참여하기",
-    link: "/auth/signup",
-    bgColor: "from-green-600 to-blue-600",
-  },
-  {
-    id: 3,
-    title: "안전한 거래 보장",
-    subtitle: "에스크로 시스템으로 안전하게 거래하세요",
-    image: "/placeholder.svg?height=400&width=800&text=Safe+Trading",
-    cta: "더 알아보기",
-    link: "/how-it-works",
-    bgColor: "from-purple-600 to-pink-600",
-  },
-]
+export function Hero() {
+  const [searchQuery, setSearchQuery] = useState("")
+  const { navigate } = useAppNavigation()
 
-export default function Hero() {
-  const [currentSlide, setCurrentSlide] = useState(0)
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
-    }, 5000)
-    return () => clearInterval(timer)
-  }, [])
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
-  }
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + heroSlides.length) % heroSlides.length)
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (searchQuery.trim()) {
+      navigate(`/search?q=${encodeURIComponent(searchQuery.trim())}`)
+    }
   }
 
   return (
-    <div className="w-full">
-      {/* 메인 히어로 섹션 */}
-      <div className="relative h-[500px] overflow-hidden bg-gradient-to-r from-blue-600 to-purple-600">
-        {/* 슬라이드 배경 */}
-        <div className="absolute inset-0">
-          {heroSlides.map((slide, index) => (
-            <div
-              key={slide.id}
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
-              }`}
-            >
-              <div className={`absolute inset-0 bg-gradient-to-r ${slide.bgColor} opacity-90`} />
-              <img
-                src={slide.image || "/placeholder.svg"}
-                alt={slide.title}
-                className="w-full h-full object-cover opacity-20"
+    <section className="relative bg-gradient-to-br from-blue-50 via-white to-purple-50 py-20">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="text-center">
+          <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
+            AI가 만드는{" "}
+            <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+              스마트 경매
+            </span>
+          </h1>
+          <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
+            인공지능 기술로 더 정확한 가격 예측과 안전한 거래를 제공하는 차세대 경매 플랫폼입니다.
+          </p>
+
+          {/* 검색바 */}
+          <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-12">
+            <div className="relative">
+              <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+              <input
+                type="search"
+                placeholder="원하는 상품을 검색해보세요..."
+                className="w-full pl-12 pr-4 py-4 text-lg border border-gray-300 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent shadow-lg"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
+              <Button type="submit" className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full px-8">
+                검색
+              </Button>
             </div>
-          ))}
-        </div>
+          </form>
 
-        {/* 컨텐츠 */}
-        <div className="relative z-10 h-full flex items-center">
-          <div className="max-w-7xl mx-auto px-6 w-full">
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
-              {/* 왼쪽: 텍스트 컨텐츠 */}
-              <div className="text-white">
-                <h1 className="text-4xl lg:text-6xl font-bold mb-6 leading-tight">{heroSlides[currentSlide].title}</h1>
-                <p className="text-xl mb-8 text-blue-100 leading-relaxed">{heroSlides[currentSlide].subtitle}</p>
+          {/* CTA 버튼들 */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
+            <SafeLink href="/search">
+              <Button size="lg" className="px-8 py-3 text-lg">
+                경매 둘러보기
+              </Button>
+            </SafeLink>
+            <SafeLink href="/sell">
+              <Button variant="outline" size="lg" className="px-8 py-3 text-lg">
+                판매하기
+              </Button>
+            </SafeLink>
+          </div>
 
-                {/* CTA 버튼 */}
-                <div className="flex flex-col sm:flex-row gap-4">
-                  <Button asChild size="lg" className="bg-white text-blue-600 hover:bg-gray-100 text-lg px-8 py-4">
-                    <Link href={heroSlides[currentSlide].link}>{heroSlides[currentSlide].cta}</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    size="lg"
-                    variant="outline"
-                    className="border-white text-white hover:bg-white hover:text-blue-600 text-lg px-8 py-4"
-                  >
-                    <Link href="/how-it-works">이용방법 보기</Link>
-                  </Button>
-                </div>
+          {/* 특징 카드들 */}
+          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+            <div className="bg-white p-6 rounded-xl shadow-lg border">
+              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
               </div>
+              <h3 className="text-xl font-semibold mb-2">AI 가격 예측</h3>
+              <p className="text-gray-600">
+                머신러닝 알고리즘으로 정확한 시장 가격을 예측하여 합리적인 거래를 도와드립니다.
+              </p>
+            </div>
 
-              {/* 오른쪽: 이미지 (모바일에서는 숨김) */}
-              <div className="hidden lg:block">
-                <div className="relative">
-                  <img
-                    src={heroSlides[currentSlide].image || "/placeholder.svg"}
-                    alt={heroSlides[currentSlide].title}
-                    className="w-full max-w-lg mx-auto rounded-lg shadow-2xl"
-                  />
-                </div>
+            <div className="bg-white p-6 rounded-xl shadow-lg border">
+              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-6 h-6 text-green-600" />
               </div>
+              <h3 className="text-xl font-semibold mb-2">안전한 거래</h3>
+              <p className="text-gray-600">
+                에스크로 시스템과 사기 방지 AI로 안전하고 신뢰할 수 있는 거래 환경을 제공합니다.
+              </p>
+            </div>
+
+            <div className="bg-white p-6 rounded-xl shadow-lg border">
+              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mx-auto mb-4">
+                <Zap className="w-6 h-6 text-purple-600" />
+              </div>
+              <h3 className="text-xl font-semibold mb-2">실시간 경매</h3>
+              <p className="text-gray-600">실시간 입찰 시스템으로 역동적이고 흥미진진한 경매 경험을 제공합니다.</p>
             </div>
           </div>
         </div>
-
-        {/* 슬라이드 네비게이션 화살표 */}
-        <button
-          onClick={prevSlide}
-          className="absolute left-6 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all z-20 backdrop-blur-sm"
-          aria-label="이전 슬라이드"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          onClick={nextSlide}
-          className="absolute right-6 top-1/2 transform -translate-y-1/2 bg-white/20 hover:bg-white/30 text-white p-3 rounded-full transition-all z-20 backdrop-blur-sm"
-          aria-label="다음 슬라이드"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-
-        {/* 슬라이드 인디케이터 */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
-          {heroSlides.map((_, index) => (
-            <button
-              key={index}
-              onClick={() => setCurrentSlide(index)}
-              className={`w-3 h-3 rounded-full transition-all ${
-                index === currentSlide ? "bg-white scale-125" : "bg-white/50 hover:bg-white/75"
-              }`}
-              aria-label={`슬라이드 ${index + 1}로 이동`}
-            />
-          ))}
-        </div>
       </div>
-    </div>
+    </section>
   )
 }

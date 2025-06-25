@@ -1,23 +1,20 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { Search, Plus, Menu, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import SafeLink from "@/components/SafeLink"
+import { AuthButton } from "@/components/AuthButton"
 import { ROUTES, createRoute, useAppNavigation } from "@/lib/navigation"
+import { useAuth } from "@/contexts/AuthContext"
 
 const Header = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { navigate } = useAppNavigation()
-
-  // 임시 사용자 상태
-  const isAuthenticated = false
-  const user = null
-  const unreadCount = 0
+  const { isAuthenticated } = useAuth()
 
   const handleSellClick = () => {
     if (!isAuthenticated) {
@@ -27,23 +24,11 @@ const Header = () => {
     navigate(ROUTES.SELL)
   }
 
-  const handleProtectedRoute = (route: string) => {
-    if (!isAuthenticated) {
-      navigate(createRoute.loginWithRedirect(route))
-      return
-    }
-    navigate(route)
-  }
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault()
     if (searchQuery.trim()) {
       navigate(`${ROUTES.SEARCH}?q=${encodeURIComponent(searchQuery.trim())}`)
     }
-  }
-
-  const logout = () => {
-    console.log("로그아웃")
   }
 
   return (
@@ -81,17 +66,8 @@ const Header = () => {
             판매하기
           </Button>
 
-          {/* 로그인되지 않은 경우 */}
-          <SafeLink href={ROUTES.LOGIN}>
-            <Button variant="ghost" size="sm">
-              로그인
-            </Button>
-          </SafeLink>
-          <SafeLink href={ROUTES.SIGNUP}>
-            <Button variant="outline" size="sm" className="bg-blue-600 text-white hover:bg-blue-700 border-blue-600">
-              회원가입
-            </Button>
-          </SafeLink>
+          {/* 인증 버튼 */}
+          <AuthButton />
 
           {/* 모바일 메뉴 버튼 */}
           <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -111,20 +87,24 @@ const Header = () => {
             >
               판매하기
             </SafeLink>
-            <SafeLink
-              href={ROUTES.LOGIN}
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              로그인
-            </SafeLink>
-            <SafeLink
-              href={ROUTES.SIGNUP}
-              className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
-              onClick={() => setIsMenuOpen(false)}
-            >
-              회원가입
-            </SafeLink>
+            {!isAuthenticated && (
+              <>
+                <SafeLink
+                  href={ROUTES.LOGIN}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  로그인
+                </SafeLink>
+                <SafeLink
+                  href={ROUTES.SIGNUP}
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  회원가입
+                </SafeLink>
+              </>
+            )}
           </div>
         </div>
       )}

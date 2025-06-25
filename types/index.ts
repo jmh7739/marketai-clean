@@ -2,11 +2,11 @@
 export interface User {
   id: string
   name: string
-  email: string
+  email?: string
   phone?: string
-  avatar?: string
-  createdAt: Date
+  profileImage?: string
   isVerified: boolean
+  createdAt: Date
 }
 
 export interface Product {

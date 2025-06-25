@@ -1,189 +1,120 @@
-"use client"
-
-import Link from "next/link"
+import SafeLink from "@/components/SafeLink"
 import { Facebook, Twitter, Instagram, Youtube } from "lucide-react"
 
-export default function Footer() {
+export function Footer() {
   return (
-    <footer className="bg-gray-50 border-t mt-16">
-      <div className="max-w-7xl mx-auto px-6 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8">
-          {/* 구매 */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">구매</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>
-                <Link href="/search" className="hover:text-blue-600">
-                  등록
-                </Link>
-              </li>
-              <li>
-                <Link href="/how-it-works" className="hover:text-blue-600">
-                  MarketAI 입찰 보장
-                </Link>
-              </li>
-              <li>
-                <Link href="/help" className="hover:text-blue-600">
-                  입찰 및 구매 도움말
-                </Link>
-              </li>
-              <li>
-                <Link href="/stores" className="hover:text-blue-600">
-                  스토어
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* 판매 */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">판매</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>
-                <Link href="/sell" className="hover:text-blue-600">
-                  판매 시작
-                </Link>
-              </li>
-              <li>
-                <Link href="/help/selling" className="hover:text-blue-600">
-                  판매 방법 알아보기
-                </Link>
-              </li>
-              <li>
-                <Link href="/fees" className="hover:text-blue-600">
-                  수수료
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* 도구 및 앱 */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">도구 및 앱</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>
-                <Link href="/mobile" className="hover:text-blue-600">
-                  모바일 앱
-                </Link>
-              </li>
-              <li>
-                <Link href="/developers" className="hover:text-blue-600">
-                  개발자
-                </Link>
-              </li>
-              <li>
-                <Link href="/security" className="hover:text-blue-600">
-                  보안 센터
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* MarketAI 소개 */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">MarketAI 소개</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>
-                <Link href="/about" className="hover:text-blue-600">
-                  회사 정보
-                </Link>
-              </li>
-              <li>
-                <Link href="/news" className="hover:text-blue-600">
-                  뉴스
-                </Link>
-              </li>
-              <li>
-                <Link href="/investors" className="hover:text-blue-600">
-                  투자자
-                </Link>
-              </li>
-              <li>
-                <Link href="/careers" className="hover:text-blue-600">
-                  채용
-                </Link>
-              </li>
-              <li>
-                <Link href="/diversity" className="hover:text-blue-600">
-                  다양성 및 포용성
-                </Link>
-              </li>
-              <li>
-                <Link href="/global" className="hover:text-blue-600">
-                  글로벌 임팩트
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* 도움말 및 문의 */}
-          <div>
-            <h3 className="font-semibold text-gray-900 mb-4">도움말 및 문의</h3>
-            <ul className="space-y-2 text-sm text-gray-600">
-              <li>
-                <Link href="/help" className="hover:text-blue-600">
-                  판매자 정보 센터
-                </Link>
-              </li>
-              <li>
-                <Link href="/contact" className="hover:text-blue-600">
-                  문의하기
-                </Link>
-              </li>
-              <li>
-                <Link href="/resolution" className="hover:text-blue-600">
-                  분쟁 해결
-                </Link>
-              </li>
-            </ul>
-
-            {/* 소셜 미디어 */}
-            <div className="mt-6">
-              <h4 className="font-semibold text-gray-900 mb-3">커뮤니티</h4>
-              <div className="flex space-x-3">
-                <Link href="#" className="text-gray-400 hover:text-blue-600">
-                  <Facebook className="w-5 h-5" />
-                </Link>
-                <Link href="#" className="text-gray-400 hover:text-blue-600">
-                  <Twitter className="w-5 h-5" />
-                </Link>
-                <Link href="#" className="text-gray-400 hover:text-blue-600">
-                  <Instagram className="w-5 h-5" />
-                </Link>
-                <Link href="#" className="text-gray-400 hover:text-blue-600">
-                  <Youtube className="w-5 h-5" />
-                </Link>
+    <footer className="bg-gray-900 text-white">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="grid md:grid-cols-4 gap-8">
+          {/* 로고 및 소개 */}
+          <div className="col-span-1">
+            <div className="flex items-center space-x-2 mb-4">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-blue-600 to-purple-600">
+                <span className="text-sm font-bold text-white">M</span>
               </div>
+              <span className="text-xl font-bold">MarketAI</span>
             </div>
+            <p className="text-gray-400 text-sm mb-4">AI 기술로 더 스마트하고 안전한 경매 플랫폼을 만들어갑니다.</p>
+            <div className="flex space-x-4">
+              <SafeLink href="#" className="text-gray-400 hover:text-white">
+                <Facebook className="w-5 h-5" />
+              </SafeLink>
+              <SafeLink href="#" className="text-gray-400 hover:text-white">
+                <Twitter className="w-5 h-5" />
+              </SafeLink>
+              <SafeLink href="#" className="text-gray-400 hover:text-white">
+                <Instagram className="w-5 h-5" />
+              </SafeLink>
+              <SafeLink href="#" className="text-gray-400 hover:text-white">
+                <Youtube className="w-5 h-5" />
+              </SafeLink>
+            </div>
+          </div>
+
+          {/* 서비스 */}
+          <div>
+            <h3 className="font-semibold mb-4">서비스</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <SafeLink href="/search" className="text-gray-400 hover:text-white">
+                  경매 검색
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/sell" className="text-gray-400 hover:text-white">
+                  판매하기
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/live-auctions" className="text-gray-400 hover:text-white">
+                  실시간 경매
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/ending-soon" className="text-gray-400 hover:text-white">
+                  마감임박
+                </SafeLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* 고객지원 */}
+          <div>
+            <h3 className="font-semibold mb-4">고객지원</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <SafeLink href="/help/faq" className="text-gray-400 hover:text-white">
+                  자주묻는질문
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/help/contact" className="text-gray-400 hover:text-white">
+                  고객센터
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/help/returns" className="text-gray-400 hover:text-white">
+                  반품/교환
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/tracking" className="text-gray-400 hover:text-white">
+                  배송조회
+                </SafeLink>
+              </li>
+            </ul>
+          </div>
+
+          {/* 정책 */}
+          <div>
+            <h3 className="font-semibold mb-4">정책</h3>
+            <ul className="space-y-2 text-sm">
+              <li>
+                <SafeLink href="/terms" className="text-gray-400 hover:text-white">
+                  이용약관
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/privacy" className="text-gray-400 hover:text-white">
+                  개인정보처리방침
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/notices" className="text-gray-400 hover:text-white">
+                  공지사항
+                </SafeLink>
+              </li>
+              <li>
+                <SafeLink href="/events" className="text-gray-400 hover:text-white">
+                  이벤트
+                </SafeLink>
+              </li>
+            </ul>
           </div>
         </div>
 
-        {/* 하단 정보 */}
-        <div className="border-t border-gray-200 mt-8 pt-8">
-          <div className="flex flex-col md:flex-row justify-between items-center">
-            <div className="flex flex-col md:flex-row items-center space-y-2 md:space-y-0 md:space-x-6 text-sm text-gray-600">
-              <p>Copyright © 2024 MarketAI Inc. 모든 권리 보유.</p>
-              <div className="flex space-x-4">
-                <Link href="/privacy" className="hover:text-blue-600">
-                  개인정보처리방침
-                </Link>
-                <Link href="/terms" className="hover:text-blue-600">
-                  이용약관
-                </Link>
-                <Link href="/cookies" className="hover:text-blue-600">
-                  쿠키 정책
-                </Link>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2 mt-4 md:mt-0">
-              <span className="text-sm text-gray-600">대한민국</span>
-              <div className="w-6 h-4 bg-red-500 relative">
-                <div className="absolute top-0 left-0 w-6 h-1 bg-red-500"></div>
-                <div className="absolute top-1 left-0 w-6 h-1 bg-white"></div>
-                <div className="absolute top-2 left-0 w-6 h-1 bg-blue-500"></div>
-              </div>
-            </div>
-          </div>
+        <div className="border-t border-gray-800 mt-8 pt-8 text-center text-sm text-gray-400">
+          <p>&copy; 2024 MarketAI. All rights reserved.</p>
         </div>
       </div>
     </footer>

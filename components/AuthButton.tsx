@@ -16,7 +16,7 @@ export function AuthButton() {
   const router = useRouter()
 
   const handleLogin = () => {
-    router.push("/auth/phone")
+    router.push("/auth/login")
   }
 
   const handleLogout = () => {
@@ -42,7 +42,7 @@ export function AuthButton() {
       <DropdownMenuTrigger asChild>
         <Button variant="outline" className="flex items-center space-x-2">
           <User className="w-4 h-4" />
-          <span>{user.name}</span>
+          <span>{user.name || "사용자"}</span>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-48">

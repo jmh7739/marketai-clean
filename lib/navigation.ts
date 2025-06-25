@@ -2,41 +2,51 @@
 
 import { useRouter } from "next/navigation"
 
-// 단순한 라우트 상수들
+// 라우트 상수 정의
 export const ROUTES = {
   HOME: "/",
-  SELL: "/sell",
-  SEARCH: "/search",
   LOGIN: "/auth/login",
   SIGNUP: "/auth/signup",
-  PHONE: "/auth/phone",
-  PROFILE: "/my-account",
-  ORDERS: "/my-account/orders",
-  SELLING: "/my-account/selling",
-  CHAT: "/chat",
-  WATCHLIST: "/watchlist",
+  PHONE_AUTH: "/auth/phone",
+  SELL: "/sell",
+  SEARCH: "/search",
+  MY_ACCOUNT: "/my-account",
+  ADMIN: "/admin",
+  HELP: "/help",
+  CONTACT: "/help/contact",
+  TERMS: "/terms",
+  PRIVACY: "/privacy",
 } as const
 
-// 동적 라우트 생성 함수들
+// 라우트 생성 헬퍼
 export const createRoute = {
+  loginWithRedirect: (redirectTo: string) => `${ROUTES.LOGIN}?redirect=${encodeURIComponent(redirectTo)}`,
+  signupWithRedirect: (redirectTo: string) => `${ROUTES.SIGNUP}?redirect=${encodeURIComponent(redirectTo)}`,
   product: (id: string) => `/product/${id}`,
   category: (slug: string) => `/category/${slug}`,
-  chatRoom: (roomId: string) => `/chat/${roomId}`,
-  loginWithRedirect: (redirect: string) => `/auth/login?redirect=${encodeURIComponent(redirect)}`,
+  subcategory: (categorySlug: string, subcategorySlug: string) => `/category/${categorySlug}/${subcategorySlug}`,
+  search: (query: string) => `${ROUTES.SEARCH}?q=${encodeURIComponent(query)}`,
 }
 
-// 간단한 네비게이션 훅
+// 네비게이션 훅
 export function useAppNavigation() {
   const router = useRouter()
 
+  const navigate = (path: string) => {
+    router.push(path)
+  }
+
+  const goBack = () => {
+    router.back()
+  }
+
+  const replace = (path: string) => {
+    router.replace(path)
+  }
+
   return {
-    navigate: (path: string) => {
-      router.push(path as any) // 타입 에러 우회
-    },
-    navigateBack: () => router.back(),
-    navigateReplace: (path: string) => {
-      router.replace(path as any) // 타입 에러 우회
-    },
-    refresh: () => router.refresh(),
+    navigate,
+    goBack,
+    replace,
   }
 }

@@ -51,7 +51,7 @@ Firebase Console → Authentication → Sign-in method → Phone → Test phone 
 
 Firebase 설정 스크립트:
 
-```shellscript file="setup-firebase-domains.sh"
+\`\`\`shellscript file="setup-firebase-domains.sh"
 #!/bin/bash
 
 echo "🔧 Firebase 도메인 설정 가이드"

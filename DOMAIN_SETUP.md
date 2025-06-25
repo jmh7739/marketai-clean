@@ -52,7 +52,7 @@ Vercel 대시보드에서 다음 환경변수 추가:
 
 빠른 배포 명령어:
 
-```shellscript file="quick-deploy.sh"
+\`\`\`shellscript file="quick-deploy.sh"
 #!/bin/bash
 
 echo "⚡ 빠른 배포 시작..."

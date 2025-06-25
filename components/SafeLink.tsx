@@ -1,7 +1,6 @@
 "use client"
 
 import Link from "next/link"
-import { useRouter } from "next/navigation"
 import type React from "react"
 
 interface SafeLinkProps {
@@ -11,29 +10,21 @@ interface SafeLinkProps {
   onClick?: () => void
 }
 
-const SafeLink: React.FC<SafeLinkProps> = ({ href, children, className, onClick }) => {
-  const router = useRouter()
+export default function SafeLink({ href, children, className, onClick }: SafeLinkProps) {
+  // 외부 링크인지 확인
+  const isExternal = href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")
 
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    if (onClick) {
-      onClick()
-    }
-
-    try {
-      router.push(href)
-    } catch (error) {
-      console.error("Navigation error:", error)
-      // 폴백으로 window.location 사용
-      window.location.href = href
-    }
+  if (isExternal) {
+    return (
+      <a href={href} className={className} onClick={onClick} target="_blank" rel="noopener noreferrer">
+        {children}
+      </a>
+    )
   }
 
   return (
-    <Link href={href} className={className} onClick={handleClick}>
+    <Link href={href} className={className} onClick={onClick}>
       {children}
     </Link>
   )
 }
-
-export default SafeLink
