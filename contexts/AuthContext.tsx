@@ -1,15 +1,15 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState, useEffect } from "react"
+import { createContext, useContext, useEffect, useState } from "react"
 import type { User } from "@/types"
 
 interface AuthContextType {
   user: User | null
-  isAuthenticated: boolean
-  isLoading: boolean
   login: (user: User) => void
   logout: () => void
+  isAuthenticated: boolean
+  isLoading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -19,14 +19,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    // 페이지 로드 시 로컬 스토리지에서 사용자 정보 복원
-    const savedUser = localStorage.getItem("user")
+    // 로컬 스토리지에서 사용자 정보 복원
+    const savedUser = localStorage.getItem("marketai_user")
     if (savedUser) {
       try {
         setUser(JSON.parse(savedUser))
       } catch (error) {
         console.error("Failed to parse saved user:", error)
-        localStorage.removeItem("user")
+        localStorage.removeItem("marketai_user")
       }
     }
     setIsLoading(false)
@@ -34,24 +34,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const login = (userData: User) => {
     setUser(userData)
-    localStorage.setItem("user", JSON.stringify(userData))
+    localStorage.setItem("marketai_user", JSON.stringify(userData))
   }
 
   const logout = () => {
     setUser(null)
-    localStorage.removeItem("user")
+    localStorage.removeItem("marketai_user")
   }
-
-  const isAuthenticated = user !== null
 
   return (
     <AuthContext.Provider
       value={{
         user,
-        isAuthenticated,
-        isLoading,
         login,
         logout,
+        isAuthenticated: !!user,
+        isLoading,
       }}
     >
       {children}
