@@ -2,11 +2,10 @@
 
 import type React from "react"
 import { useState } from "react"
-import { Search, Plus, Menu, X } from "lucide-react"
+import { Search, Plus, Menu, X, Heart, User, ShoppingCart, Bell } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import SafeLink from "@/components/SafeLink"
-import { AuthButton } from "@/components/AuthButton"
 import { ROUTES, createRoute, useAppNavigation } from "@/lib/navigation"
 import { useAuth } from "@/contexts/AuthContext"
 
@@ -14,7 +13,7 @@ const Header = () => {
   const [searchQuery, setSearchQuery] = useState("")
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const { navigate } = useAppNavigation()
-  const { isAuthenticated } = useAuth()
+  const { isAuthenticated, user } = useAuth()
 
   const handleSellClick = () => {
     if (!isAuthenticated) {
@@ -59,15 +58,57 @@ const Header = () => {
         </form>
 
         {/* 네비게이션 */}
-        <nav className="flex items-center space-x-4">
+        <nav className="flex items-center space-x-2">
           {/* 판매하기 버튼 */}
           <Button variant="outline" size="sm" className="hidden sm:flex" onClick={handleSellClick}>
             <Plus className="h-4 w-4 mr-2" />
             판매하기
           </Button>
 
-          {/* 인증 버튼 */}
-          <AuthButton />
+          {isAuthenticated ? (
+            <>
+              {/* 찜목록 */}
+              <SafeLink href="/watchlist">
+                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                  <Heart className="h-4 w-4 mr-1" />찜
+                </Button>
+              </SafeLink>
+
+              {/* 알림 */}
+              <Button variant="ghost" size="sm" className="hidden sm:flex">
+                <Bell className="h-4 w-4" />
+              </Button>
+
+              {/* 장바구니 */}
+              <Button variant="ghost" size="sm" className="hidden sm:flex">
+                <ShoppingCart className="h-4 w-4" />
+              </Button>
+
+              {/* 사용자 메뉴 */}
+              <SafeLink href="/my-account">
+                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                  <User className="h-4 w-4 mr-1" />
+                  {user?.name || "내 계정"}
+                </Button>
+              </SafeLink>
+            </>
+          ) : (
+            <>
+              {/* 로그인 */}
+              <SafeLink href="/auth/login">
+                <Button variant="ghost" size="sm" className="hidden sm:flex">
+                  로그인
+                </Button>
+              </SafeLink>
+
+              {/* 회원가입 */}
+              <SafeLink href="/auth/signup">
+                <Button size="sm" className="hidden sm:flex">
+                  회원가입
+                </Button>
+              </SafeLink>
+            </>
+          )}
 
           {/* 모바일 메뉴 버튼 */}
           <Button variant="ghost" size="sm" className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
@@ -87,7 +128,25 @@ const Header = () => {
             >
               판매하기
             </SafeLink>
-            {!isAuthenticated && (
+
+            {isAuthenticated ? (
+              <>
+                <SafeLink
+                  href="/watchlist"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  찜목록
+                </SafeLink>
+                <SafeLink
+                  href="/my-account"
+                  className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-gray-900 hover:bg-gray-50"
+                  onClick={() => setIsMenuOpen(false)}
+                >
+                  내 계정
+                </SafeLink>
+              </>
+            ) : (
               <>
                 <SafeLink
                   href={ROUTES.LOGIN}
