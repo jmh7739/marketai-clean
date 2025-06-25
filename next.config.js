@@ -7,11 +7,9 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   images: {
-    domains: ["placeholder.svg"],
     unoptimized: true,
+    domains: ["placeholder.svg"],
   },
-  trailingSlash: false,
-  output: "standalone",
 }
 
 module.exports = nextConfig
