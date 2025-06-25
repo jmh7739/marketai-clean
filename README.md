@@ -175,3 +175,4 @@ service cloud.firestore {
 ---
 
 **MarketAI** - 스마트한 경매, 더 나은 거래 🚀
+"Deploy fix" 
