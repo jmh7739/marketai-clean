@@ -1,0 +1,35 @@
+# VS Code에서 Git으로 업로드하는 완전 가이드
+
+## 🚀 빠른 시작 (5분 완성)
+
+### 1. GitHub 저장소 먼저 생성
+1. GitHub.com 접속 후 로그인
+2. 우측 상단 "+" → "New repository" 클릭
+3. Repository name: "marketai-auction"
+4. Public 또는 Private 선택
+5. "Create repository" 클릭
+6. 생성된 저장소 URL 복사 (예: https://github.com/username/marketai-auction.git)
+
+### 2. VS Code 터미널에서 Git 설정
+```bash
+# Git 사용자 정보 설정 (최초 1회만)
+git config --global user.name "당신의 이름"
+git config --global user.email "당신의 이메일@example.com"
+
+# 프로젝트 폴더에서 Git 초기화
+git init
+
+# 모든 파일 스테이징
+git add .
+
+# 첫 커밋
+git commit -m "Initial commit: MarketAI 경매 플랫폼 완성"
+
+# GitHub 저장소 연결
+git remote add origin https://github.com/당신의계정명/marketai-auction.git
+
+# 메인 브랜치로 설정
+git branch -M main
+
+# GitHub에 업로드
+git push -u origin main

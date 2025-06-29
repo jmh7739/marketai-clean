@@ -1,19 +1,37 @@
-=== SUPABASE 설정 정보 ===
+# Supabase 설정 완료 정보
 
-프로젝트명: MarketAI Database
+## 🗄️ 프로젝트 정보
+프로젝트 이름: marketai-db
 URL: https://avbjqxpgletdvgayjqsyi.supabase.co
+지역: Northeast Asia (Seoul)
 
-=== API 키 ===
-Anon Key (Public):
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExNjE5NDEsImV4cCI6MjA2NjczNzk0MX0.U7SOisz6JXAuyxkplO0bw-Y1zbGp57LRMT2R1HGqWiY
+## 🔑 API Keys
+Anon (public) key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExNjE5NDEsImV4cCI6MjA2NjczNzk0MX0.U7SOisz6JXAuyxkplO0bw-Y1zbGp57LRMT2R1HGqWiY
 
-Service Role Key (Secret):
-eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTE2MTk0MSwiZXhwIjoyMDY2NzM3OTQxfQ.ZsNrPrreXsm9XnohHdDWUOTbZdUvMKyHf4UKwNw46ug
+Service Role (secret) key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTE2MTk0MSwiZXhwIjoyMDY2NzM3OTQxfQ.ZsNrPrreXsm9XnohHdDWUOTbZdUvMKyHf4UKwNw46ug
 
-=== Supabase Dashboard 링크 ===
-https://supabase.com/dashboard/project/avbjqxpgletdvgayjqsyi
+## 🔧 필요한 npm 패키지
+npm install @supabase/supabase-js
+npm install @supabase/auth-helpers-nextjs
+npm install @supabase/auth-helpers-react
 
-=== 설정 완료 사항 ===
-✅ 프로젝트 생성 완료
-✅ API 키 생성 완료
-✅ 실시간 기능 활성화
+## 📊 데이터베이스 테이블 생성 필요
+Supabase Dashboard → SQL Editor에서 다음 스크립트들 실행:
+1. scripts/supabase-schema.sql
+2. scripts/rating-system-tables.sql
+3. scripts/settlement-tables.sql
+4. scripts/dispute-tables.sql
+
+## 🔐 Row Level Security (RLS) 설정
+모든 테이블에 RLS 정책 적용 필요:
+- 사용자는 자신의 데이터만 접근 가능
+- 관리자는 모든 데이터 접근 가능
+- 공개 데이터는 모든 사용자 읽기 가능
+
+## 📋 체크리스트
+- [x] Supabase 프로젝트 생성
+- [x] API Keys 확인
+- [x] 환경 변수 설정
+- [ ] 데이터베이스 테이블 생성
+- [ ] RLS 정책 설정
+- [ ] 실시간 기능 테스트

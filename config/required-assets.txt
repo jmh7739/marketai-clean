@@ -1,28 +1,56 @@
-=== 필요한 PWA 아이콘 파일들 ===
+# 필요한 에셋 파일들
 
-다음 8개 파일을 /public/ 폴더에 추가:
+## 📱 PWA 아이콘 (필수)
+다음 8개 파일이 /public/ 폴더에 필요:
+- icon-72x72.png
+- icon-96x96.png
+- icon-128x128.png
+- icon-144x144.png
+- icon-152x152.png
+- icon-192x192.png
+- icon-384x384.png
+- icon-512x512.png
 
-icon-72x72.png (72x72 픽셀)
-icon-96x96.png (96x96 픽셀)
-icon-128x128.png (128x128 픽셀)
-icon-144x144.png (144x144 픽셀)
-icon-152x152.png (152x152 픽셀)
-icon-192x192.png (192x192 픽셀)
-icon-384x384.png (384x384 픽셀)
-icon-512x512.png (512x512 픽셀)
+## 🎨 아이콘 생성 방법
 
-=== 아이콘 생성 도구 ===
-1. PWA Builder: https://www.pwabuilder.com/imageGenerator
-2. Favicon Generator: https://favicon.io/
-3. App Icon Generator: https://appicon.co/
+### 방법 1: PWA Builder (추천)
+1. https://www.pwabuilder.com/imageGenerator 접속
+2. 512x512 MarketAI 로고 업로드
+3. "Generate Images" 클릭
+4. ZIP 파일 다운로드
+5. 파일들을 /public/ 폴더에 복사
 
-=== 추가 파일들 (선택사항) ===
-/public/sounds/notification.mp3 (알림 사운드)
-/public/favicon.ico (파비콘)
-/public/apple-touch-icon.png (iOS 아이콘)
+### 방법 2: Favicon Generator
+1. https://favicon.io/favicon-generator/ 접속
+2. 텍스트 또는 이미지로 아이콘 생성
+3. 다운로드 후 필요한 크기들 추출
 
-=== 생성 방법 ===
-1. 512x512 크기의 MarketAI 로고 준비
-2. PWA Builder에 업로드
-3. 모든 크기 자동 생성
-4. ZIP 다운로드 후 /public/에 배치
+### 방법 3: 직접 생성
+포토샵, GIMP, Canva 등에서:
+1. 512x512 기본 아이콘 생성
+2. 각 크기별로 리사이즈
+3. PNG 형식으로 저장
+
+## 🔊 알림 사운드 (선택사항)
+/public/sounds/notification.mp3
+/public/sounds/bid-placed.mp3
+/public/sounds/auction-won.mp3
+
+## 🖼️ 기본 이미지들 (선택사항)
+/public/images/logo.png
+/public/images/hero-bg.jpg
+/public/images/no-image.png
+/public/images/loading.gif
+
+## 📋 체크리스트
+- [ ] PWA 아이콘 8개 추가
+- [ ] manifest.json 확인
+- [ ] 알림 사운드 추가 (선택)
+- [ ] 로고 이미지 추가 (선택)
+- [ ] 기본 이미지들 추가 (선택)
+
+## 🚨 임시 해결책
+당장 테스트하려면 아무 PNG 파일이나 8개 복사해서 이름만 바꿔도 됩니다:
+cp any-image.png public/icon-72x72.png
+cp any-image.png public/icon-96x96.png
+(나머지도 동일하게)
