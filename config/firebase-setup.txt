@@ -1,6 +1,6 @@
 === FIREBASE 설정 정보 ===
 
-프로젝트 이름: MarketAI Auction
+프로젝트 이름: MarketAI Web
 프로젝트 ID: marketai-auction
 지역: asia-northeast3 (서울)
 

@@ -1,14 +1,14 @@
-# Supabase 설정 완료 정보
+=== Supabase 설정 완료 정보 ===
 
 ## 🗄️ 프로젝트 정보
-프로젝트 이름: marketai-db
-URL: https://avbjqxpgletdvgayjqsyi.supabase.co
+프로젝트 이름: MarketAI Database
+프로젝트 URL: https://avbjqxpgletdvgayjqsyi.supabase.co
 지역: Northeast Asia (Seoul)
 
 ## 🔑 API Keys
-Anon (public) key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExNjE5NDEsImV4cCI6MjA2NjczNzk0MX0.U7SOisz6JXAuyxkplO0bw-Y1zbGp57LRMT2R1HGqWiY
+Anon Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExNjE5NDEsImV4cCI6MjA2NjczNzk0MX0.U7SOisz6JXAuyxkplO0bw-Y1zbGp57LRMT2R1HGqWiY
 
-Service Role (secret) key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTE2MTk0MSwiZXhwIjoyMDY2NzM3OTQxfQ.ZsNrPrreXsm9XnohHdDWUOTbZdUvMKyHf4UKwNw46ug
+Service Role Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTE2MTk0MSwiZXhwIjoyMDY2NzM3OTQxfQ.ZsNrPrreXsm9XnohHdDWUOTbZdUvMKyHf4UKwNw46ug
 
 ## 🔧 필요한 npm 패키지
 npm install @supabase/supabase-js

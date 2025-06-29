@@ -1,4 +1,4 @@
-# Vercel 환경 변수 설정 가이드
+=== Vercel 환경 변수 설정 ===
 
 ## 🔥 Firebase 관련
 NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyB8-Mg4Ol9lM4R6mMVuwt64jlST97GRjog
