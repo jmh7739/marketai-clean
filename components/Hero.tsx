@@ -1,95 +1,130 @@
 "use client"
+
+import { useState, useEffect } from "react"
+import { ChevronLeft, ChevronRight, TrendingUp, Users, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import SafeLink from "@/components/SafeLink"
-import { useState, useEffect } from "react"
-import { useAppNavigation } from "@/lib/navigation"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+
+const bannerSlides = [
+  {
+    id: 1,
+    title: "AI 기반 스마트 경매",
+    subtitle: "인공지능이 분석하는 정확한 시세와 투명한 거래",
+    description: "머신러닝 알고리즘으로 상품 가치를 정확히 평가하고, 공정한 경매 환경을 제공합니다.",
+    bgColor: "from-blue-600 to-purple-700",
+    primaryAction: { text: "경매 참여하기", href: "/search" },
+    secondaryAction: { text: "판매하기", href: "/sell" },
+  },
+  {
+    id: 2,
+    title: "안전한 거래 보장",
+    subtitle: "에스크로 시스템과 실명 인증으로 신뢰할 수 있는 거래",
+    description: "전화번호 인증, 본인확인, 안전결제 시스템으로 사기 없는 깨끗한 거래환경을 만듭니다.",
+    bgColor: "from-green-600 to-teal-700",
+    primaryAction: { text: "안전거래 알아보기", href: "/terms" },
+    secondaryAction: { text: "회원가입", href: "/auth/signup" },
+  },
+  {
+    id: 3,
+    title: "실시간 경매 현황",
+    subtitle: "지금 이 순간 진행되는 뜨거운 경매들",
+    description: "실시간 입찰 현황과 AI 추천으로 놓치지 말아야 할 경매를 찾아보세요.",
+    bgColor: "from-orange-600 to-red-700",
+    primaryAction: { text: "실시간 경매 보기", href: "/live-auctions" },
+    secondaryAction: { text: "경매 테스트", href: "/auction-test" },
+  },
+]
+
+// 실제 데이터베이스에서 가져오는 실시간 통계
+const getRealTimeStats = () => {
+  try {
+    // 실제 로컬스토리지에서 데이터 가져오기
+    const auctions = JSON.parse(localStorage.getItem("auctions") || "[]")
+    const users = JSON.parse(localStorage.getItem("users") || "[]")
+    const transactions = JSON.parse(localStorage.getItem("transactions") || "[]")
+
+    const now = new Date()
+    const today = now.toDateString()
+
+    // 오늘 거래 완료된 것들
+    const todayTransactions = transactions.filter((t: any) => {
+      try {
+        return new Date(t.completedAt).toDateString() === today
+      } catch {
+        return false
+      }
+    })
+
+    // 진행중인 경매 (종료시간이 현재보다 미래)
+    const activeAuctions = auctions.filter((auction: any) => {
+      try {
+        return new Date(auction.endTime) > now && auction.status === "active"
+      } catch {
+        return false
+      }
+    })
+
+    return {
+      activeAuctions: activeAuctions.length,
+      totalUsers: users.length,
+      todayTransactions: todayTransactions.length,
+    }
+  } catch (error) {
+    console.error("통계 데이터 로드 실패:", error)
+    return {
+      activeAuctions: 0,
+      totalUsers: 0,
+      todayTransactions: 0,
+    }
+  }
+}
 
 export function Hero() {
   const [currentSlide, setCurrentSlide] = useState(0)
-  const [liveStats, setLiveStats] = useState({
-    activeAuctions: 0,
-    todayItems: 0,
-    activeUsers: 0,
-  })
-  const { navigate } = useAppNavigation()
+  const [stats, setStats] = useState(getRealTimeStats())
 
-  // 배너 슬라이드 데이터
-  const banners = [
-    {
-      title: "AI가 만드는 스마트 경매",
-      subtitle: "인공지능 기술로 더 정확한 가격 예측과 안전한 거래를 제공하는 차세대 경매 플랫폼입니다.",
-      bgColor: "from-blue-600 to-purple-600",
-      primaryAction: { text: "경매 둘러보기", href: "/search" },
-      secondaryAction: { text: "판매하기", href: "/sell" },
-    },
-    {
-      title: "🔥 HOT 경매 진행중!",
-      subtitle: "지금 가장 인기있는 상품들의 치열한 경매가 진행중입니다. 놓치지 마세요!",
-      bgColor: "from-red-500 to-orange-500",
-      primaryAction: { text: "HOT 경매 보기", href: "/live-auctions" },
-      secondaryAction: { text: "입찰 참여", href: "/search" },
-    },
-    {
-      title: "💎 프리미엄 상품 특가",
-      subtitle: "엄선된 프리미엄 상품들을 특별한 가격으로 만나보세요. 한정 수량!",
-      bgColor: "from-emerald-500 to-teal-500",
-      primaryAction: { text: "프리미엄 보기", href: "/category/premium" },
-      secondaryAction: { text: "알림 설정", href: "/notifications" },
-    },
-  ]
-
-  // 자동 슬라이드
+  // 슬라이드 자동 전환
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % banners.length)
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)
     }, 5000)
+    return () => clearInterval(timer)
+  }, [])
 
-    return () => clearInterval(interval)
-  }, [banners.length])
-
-  // 실제 API에서 실시간 통계 가져오기
+  // 실시간 통계 업데이트 (실제 데이터 기반)
   useEffect(() => {
-    const fetchRealStats = async () => {
-      try {
-        // 실제 API 호출 (현재는 더미 데이터)
-        // const response = await fetch('/api/stats/live')
-        // const data = await response.json()
-
-        // 임시로 실제 수치 시뮬레이션
-        const now = new Date()
-        const hour = now.getHours()
-
-        // 시간대별 실제적인 수치 계산
-        const baseActiveAuctions = 850 + Math.floor(Math.sin((hour * Math.PI) / 12) * 200)
-        const baseTodayItems = 2100 + Math.floor(Math.random() * 300)
-        const baseActiveUsers = 8500 + Math.floor(Math.sin((hour * Math.PI) / 12) * 3000)
-
-        setLiveStats({
-          activeAuctions: baseActiveAuctions,
-          todayItems: baseTodayItems,
-          activeUsers: baseActiveUsers,
-        })
-      } catch (error) {
-        console.error("Failed to fetch live stats:", error)
-      }
+    const updateStats = () => {
+      setStats(getRealTimeStats())
     }
 
-    fetchRealStats()
-    const interval = setInterval(fetchRealStats, 60000) // 1분마다 업데이트
+    // 초기 로드
+    updateStats()
 
-    return () => clearInterval(interval)
+    // 30초마다 업데이트
+    const statsTimer = setInterval(updateStats, 30000)
+
+    // 로컬스토리지 변경 감지
+    const handleStorageChange = () => {
+      updateStats()
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+
+    return () => {
+      clearInterval(statsTimer)
+      window.removeEventListener("storage", handleStorageChange)
+    }
   }, [])
 
   const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % banners.length)
+    setCurrentSlide((prev) => (prev + 1) % bannerSlides.length)
   }
 
   const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + banners.length) % banners.length)
+    setCurrentSlide((prev) => (prev - 1 + bannerSlides.length) % bannerSlides.length)
   }
 
-  const currentBanner = banners[currentSlide]
+  const currentBanner = bannerSlides[currentSlide]
 
   return (
     <section className="bg-white py-8">
@@ -107,6 +142,7 @@ export function Hero() {
             <div className="relative z-10 max-w-2xl">
               <h1 className="text-3xl md:text-4xl font-bold mb-4">{currentBanner.title}</h1>
               <p className="text-lg mb-6 opacity-90">{currentBanner.subtitle}</p>
+              <p className="text-base mb-6 opacity-80">{currentBanner.description}</p>
               <div className="flex gap-4">
                 <SafeLink href={currentBanner.primaryAction.href}>
                   <Button size="lg" variant="secondary">
@@ -139,7 +175,7 @@ export function Hero() {
             </button>
 
             <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-              {banners.map((_, index) => (
+              {bannerSlides.map((_, index) => (
                 <button
                   key={index}
                   onClick={() => setCurrentSlide(index)}
@@ -152,7 +188,7 @@ export function Hero() {
           </div>
         </div>
 
-        {/* 실시간 경매 현황 */}
+        {/* 실시간 경매 현황 (실제 데이터) */}
         <div className="bg-gray-50 rounded-lg p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold text-gray-900">
@@ -170,19 +206,30 @@ export function Hero() {
 
           <div className="grid md:grid-cols-3 gap-4 text-center">
             <div className="bg-white rounded-lg p-4 border-l-4 border-blue-500">
-              <div className="text-2xl font-bold text-blue-600 mb-1">{liveStats.activeAuctions.toLocaleString()}</div>
+              <div className="flex items-center justify-center mb-2">
+                <TrendingUp className="w-6 h-6 text-blue-600" />
+              </div>
+              <div className="text-2xl font-bold text-blue-600 mb-1">{stats.activeAuctions}</div>
               <div className="text-sm text-gray-600">진행중인 경매</div>
               <div className="text-xs text-green-600 mt-1">↗ 실시간 업데이트</div>
             </div>
+
             <div className="bg-white rounded-lg p-4 border-l-4 border-green-500">
-              <div className="text-2xl font-bold text-green-600 mb-1">{liveStats.todayItems.toLocaleString()}</div>
-              <div className="text-sm text-gray-600">오늘 등록된 상품</div>
-              <div className="text-xs text-blue-600 mt-1">📈 실시간 집계</div>
+              <div className="flex items-center justify-center mb-2">
+                <Users className="w-6 h-6 text-green-600" />
+              </div>
+              <div className="text-2xl font-bold text-green-600 mb-1">{stats.totalUsers.toLocaleString()}</div>
+              <div className="text-sm text-gray-600">전체 회원수</div>
+              <div className="text-xs text-blue-600 mt-1">📈 실제 회원수</div>
             </div>
-            <div className="bg-white rounded-lg p-4 border-l-4 border-purple-500">
-              <div className="text-2xl font-bold text-purple-600 mb-1">{liveStats.activeUsers.toLocaleString()}</div>
-              <div className="text-sm text-gray-600">활성 사용자</div>
-              <div className="text-xs text-orange-600 mt-1">🔥 현재 접속중</div>
+
+            <div className="bg-white rounded-lg p-4 border-l-4 border-orange-500">
+              <div className="flex items-center justify-center mb-2">
+                <Clock className="w-6 h-6 text-orange-600" />
+              </div>
+              <div className="text-2xl font-bold text-orange-600 mb-1">{stats.todayTransactions}</div>
+              <div className="text-sm text-gray-600">오늘 거래 완료</div>
+              <div className="text-xs text-purple-600 mt-1">💰 실제 거래</div>
             </div>
           </div>
         </div>

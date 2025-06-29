@@ -1,0 +1,28 @@
+=== FIREBASE 설정 정보 ===
+
+프로젝트명: marketai-auction
+프로젝트 ID: marketai-auction
+
+=== Firebase 설정 코드 ===
+const firebaseConfig = {
+  apiKey: "AIzaSyB8-Mg4Ol9lM4R6mMVuwt64jlST97GRjog",
+  authDomain: "marketai-auction.firebaseapp.com",
+  projectId: "marketai-auction",
+  storageBucket: "marketai-auction.firebasestorage.app",
+  messagingSenderId: "413550271948",
+  appId: "1:413550271948:web:b8df85cf7415d5dc995169",
+  measurementId: "G-22JEGEC53V"
+};
+
+=== 테스트 전화번호 ===
+번호: +82 10 1234 5678
+인증코드: 123456
+
+=== Firebase Console 링크 ===
+https://console.firebase.google.com/project/marketai-auction
+
+=== 설정 완료 사항 ===
+✅ Authentication 활성화
+✅ 전화번호 로그인 활성화
+✅ 웹 앱 등록 완료
+✅ reCAPTCHA 설정 완료

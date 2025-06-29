@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { Mail, Lock, Eye, EyeOff, LogIn, AlertCircle } from "lucide-react"
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -17,14 +17,13 @@ export default function LoginPage() {
     password: "",
   })
   const [showPassword, setShowPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [isLoading, setIsLoading] = useState(false)
 
   const router = useRouter()
   const searchParams = useSearchParams()
   const { login } = useAuth()
 
-  // 리다이렉트 URL 확인
   const redirectTo = searchParams.get("redirect") || "/"
 
   const handleInputChange = (field: string, value: string) => {
@@ -34,39 +33,64 @@ export default function LoginPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    if (!formData.email || !formData.password) {
-      setError("이메일과 비밀번호를 모두 입력해주세요")
-      return
-    }
-
-    setIsLoading(true)
+    setLoading(true)
     setError("")
 
     try {
-      // 더미 로그인 (실제로는 서버 API 호출)
-      await new Promise((resolve) => setTimeout(resolve, 1000))
+      if (!formData.email || !formData.password) {
+        setError("이메일과 비밀번호를 모두 입력해주세요.")
+        return
+      }
 
-      // 테스트 계정 확인
-      if (formData.email === "test@marketai.com" && formData.password === "test1234") {
-        const user = {
-          id: "user_test",
-          name: "테스트 사용자",
+      // 데모 계정 확인
+      if (formData.email === "demo@marketai.co.kr" && formData.password === "demo123") {
+        const userData = {
+          id: "demo-user",
+          name: "데모 사용자",
           email: formData.email,
           phone: "010-1234-5678",
+          avatar: "",
+          createdAt: new Date().toISOString(),
           isVerified: true,
-          createdAt: new Date(),
+          role: "user" as const,
+          status: "active" as const,
+          lastLoginAt: new Date().toISOString(),
+          preferences: {
+            notifications: true,
+            marketing: false,
+            language: "ko",
+          },
         }
 
-        login(user)
+        login(userData)
         router.push(redirectTo)
       } else {
-        setError("이메일 또는 비밀번호가 올바르지 않습니다")
+        // 일반 로그인 처리 (실제로는 서버 API 호출)
+        const userData = {
+          id: "user-" + Date.now(),
+          name: formData.email.split("@")[0],
+          email: formData.email,
+          phone: "",
+          avatar: "",
+          createdAt: new Date().toISOString(),
+          isVerified: true,
+          role: "user" as const,
+          status: "active" as const,
+          lastLoginAt: new Date().toISOString(),
+          preferences: {
+            notifications: true,
+            marketing: false,
+            language: "ko",
+          },
+        }
+
+        login(userData)
+        router.push(redirectTo)
       }
-    } catch (error) {
-      setError("로그인 중 오류가 발생했습니다. 다시 시도해주세요.")
+    } catch (err) {
+      setError("로그인에 실패했습니다. 다시 시도해주세요.")
     } finally {
-      setIsLoading(false)
+      setLoading(false)
     }
   }
 
@@ -75,10 +99,10 @@ export default function LoginPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <LogIn className="w-6 h-6 text-blue-600" />
+            <User className="w-6 h-6 text-blue-600" />
           </div>
-          <CardTitle className="text-2xl font-bold">MarketAI 로그인</CardTitle>
-          <p className="text-gray-600 mt-2">계정에 로그인하여 경매에 참여하세요</p>
+          <CardTitle className="text-2xl font-bold">로그인</CardTitle>
+          <p className="text-gray-600 mt-2">MarketAI에 오신 것을 환영합니다</p>
         </CardHeader>
 
         <CardContent>
@@ -97,7 +121,7 @@ export default function LoginPage() {
                   onChange={(e) => handleInputChange("email", e.target.value)}
                   placeholder="example@email.com"
                   className="pl-10"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
               </div>
             </div>
@@ -116,7 +140,7 @@ export default function LoginPage() {
                   onChange={(e) => handleInputChange("password", e.target.value)}
                   placeholder="비밀번호를 입력하세요"
                   className="pl-10 pr-10"
-                  disabled={isLoading}
+                  disabled={loading}
                 />
                 <button
                   type="button"
@@ -135,14 +159,17 @@ export default function LoginPage() {
               </div>
             )}
 
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? (
+            <Button type="submit" className="w-full" disabled={loading}>
+              {loading ? (
                 <div className="flex items-center">
                   <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
                   로그인 중...
                 </div>
               ) : (
-                "로그인"
+                <div className="flex items-center justify-center">
+                  로그인
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </div>
               )}
             </Button>
           </form>
@@ -165,10 +192,10 @@ export default function LoginPage() {
           </div>
 
           <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-            <h4 className="font-medium text-blue-900 mb-2">🧪 테스트 계정</h4>
+            <h4 className="font-medium text-blue-900 mb-2">💡 데모 계정</h4>
             <div className="text-sm text-blue-700 space-y-1">
-              <p>이메일: test@marketai.com</p>
-              <p>비밀번호: test1234</p>
+              <p>이메일: demo@marketai.co.kr</p>
+              <p>비밀번호: demo123</p>
             </div>
           </div>
         </CardContent>

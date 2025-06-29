@@ -1,0 +1,19 @@
+=== SUPABASE 설정 정보 ===
+
+프로젝트명: MarketAI Database
+URL: https://avbjqxpgletdvgayjqsyi.supabase.co
+
+=== API 키 ===
+Anon Key (Public):
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExNjE5NDEsImV4cCI6MjA2NjczNzk0MX0.U7SOisz6JXAuyxkplO0bw-Y1zbGp57LRMT2R1HGqWiY
+
+Service Role Key (Secret):
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTE2MTk0MSwiZXhwIjoyMDY2NzM3OTQxfQ.ZsNrPrreXsm9XnohHdDWUOTbZdUvMKyHf4UKwNw46ug
+
+=== Supabase Dashboard 링크 ===
+https://supabase.com/dashboard/project/avbjqxpgletdvgayjqsyi
+
+=== 설정 완료 사항 ===
+✅ 프로젝트 생성 완료
+✅ API 키 생성 완료
+✅ 실시간 기능 활성화

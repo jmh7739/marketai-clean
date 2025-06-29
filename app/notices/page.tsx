@@ -1,285 +1,309 @@
 "use client"
 
 import { useState } from "react"
-import { Bell, Pin, Calendar, Eye, ChevronRight } from "lucide-react"
-import { Card, CardContent } from "@/components/ui/card"
+import { Calendar, Eye, Pin, Search } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { Button } from "@/components/ui/button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import SafeLink from "@/components/SafeLink"
 
 interface Notice {
-  id: number
+  id: string
   title: string
   content: string
-  category: string
-  date: string
-  views: number
+  type: "important" | "update" | "event" | "maintenance"
   isPinned: boolean
-  isNew: boolean
+  views: number
+  createdAt: string
+  author: string
 }
 
-const mockNotices: Notice[] = [
+const notices: Notice[] = [
   {
-    id: 1,
-    title: "MarketAI 새해 이벤트 안내",
-    content: "새해를 맞아 특별한 이벤트를 준비했습니다. 1월 한 달간 진행되는 다양한 혜택을 확인해보세요!",
-    category: "이벤트",
-    date: "2024-01-15",
+    id: "1",
+    title: "낙찰 후 구매 취소 제재 정책 안내",
+    content: `안녕하세요, MarketAI입니다.
+
+건전한 경매 문화 조성을 위해 낙찰 후 구매 취소에 대한 제재 정책을 안내드립니다.
+
+📋 제재 정책:
+• 1회 취소: 경고
+• 2회 취소: 7일 이용 정지
+• 3회 취소: 30일 이용 정지
+• 4회 이상: 영구 이용 정지
+
+📅 제재 기록 초기화:
+- 6개월 동안 추가 위반이 없으면 제재 횟수가 초기화됩니다
+
+✅ 예외 상황:
+- 상품이 설명과 다른 경우
+- 상품에 하자가 있는 경우
+- 판매자가 배송하지 않는 경우
+
+입찰 전 신중하게 검토해주시기 바랍니다.
+
+감사합니다.`,
+    type: "important",
+    isPinned: true,
     views: 1234,
-    isPinned: true,
-    isNew: true,
+    createdAt: "2024-01-15",
+    author: "MarketAI 운영팀",
   },
   {
-    id: 2,
-    title: "시스템 점검 안내 (1월 20일 02:00-04:00)",
-    content: "서비스 개선을 위한 시스템 점검이 예정되어 있습니다. 점검 시간 동안 서비스 이용이 제한됩니다.",
-    category: "시스템",
-    date: "2024-01-14",
-    views: 856,
+    id: "2",
+    title: "수수료 정책 안내",
+    content: `MarketAI의 수수료 정책을 안내드립니다.
+
+📊 수수료 구조 (거래액 기준):
+• 1만원 미만: 10%
+• 1-5만원: 9%
+• 5-10만원: 8%
+• 10-30만원: 7%
+• 30-50만원: 6.5%
+• 50-100만원: 6%
+• 100-300만원: 5.5%
+• 300만원 이상: 5%
+
+✅ 구매자는 수수료가 없습니다!
+✅ 상품 등록 시에는 수수료가 없습니다!
+
+수수료는 구매확정 후 7일 뒤 정산 시 차감됩니다.`,
+    type: "update",
     isPinned: true,
-    isNew: false,
+    views: 987,
+    createdAt: "2024-01-10",
+    author: "MarketAI 운영팀",
   },
   {
-    id: 3,
-    title: "개인정보처리방침 개정 안내",
-    content: "개인정보보호법 개정에 따라 개인정보처리방침이 일부 변경됩니다. 변경 내용을 확인해주세요.",
-    category: "정책",
-    date: "2024-01-12",
-    views: 567,
+    id: "3",
+    title: "계정 보안 강화 안내",
+    content: `계정 보안 강화를 위한 정책 변경을 안내드립니다.
+
+🔐 로그인 보안:
+- 5회 연속 로그인 실패 시 24시간 계정 잠금
+- 잠금 해제는 본인 인증 또는 비밀번호 재설정으로 가능
+
+🔑 비밀번호 정책:
+- 최소 8자 이상
+- 숫자, 특수문자 포함 필수
+- 정기적인 비밀번호 변경 권장
+
+📱 본인 인증:
+- 전화번호 인증 필수
+- 고액 거래 시 추가 인증 요구
+
+안전한 거래를 위해 협조 부탁드립니다.`,
+    type: "important",
     isPinned: false,
-    isNew: false,
+    views: 756,
+    createdAt: "2024-01-08",
+    author: "MarketAI 보안팀",
   },
   {
-    id: 4,
-    title: "모바일 앱 업데이트 (v2.1.0) 출시",
-    content: "새로운 기능과 개선사항이 포함된 모바일 앱 업데이트가 출시되었습니다.",
-    category: "업데이트",
-    date: "2024-01-10",
+    id: "4",
+    title: "신규 카테고리 추가 안내",
+    content: `사용자 편의를 위해 새로운 카테고리 기능을 추가했습니다.
+
+✨ 새로운 기능:
+- 모든 대분류에 "기타" 카테고리 추가
+- 소분류에 "기타 (직접입력)" 옵션 제공
+- 사용자가 직접 카테고리명 입력 가능
+
+📝 상품 상태:
+- 기존 옵션 외에 "기타 (직접입력)" 추가
+- 더욱 정확한 상품 상태 표시 가능
+
+더욱 편리해진 상품 등록을 경험해보세요!`,
+    type: "update",
+    isPinned: false,
+    views: 543,
+    createdAt: "2024-01-05",
+    author: "MarketAI 개발팀",
+  },
+  {
+    id: "5",
+    title: "설 연휴 고객센터 운영 안내",
+    content: `설 연휴 기간 고객센터 운영 시간을 안내드립니다.
+
+📅 운영 일정:
+- 2월 9일(금): 정상 운영 (09:00-18:00)
+- 2월 10일(토) ~ 2월 12일(월): 휴무
+- 2월 13일(화): 정상 운영 재개
+
+📞 긴급 문의:
+- 이메일: support@marketai.com
+- 24시간 접수 가능 (답변은 운영 재개 후)
+
+🎊 새해 복 많이 받으세요!`,
+    type: "event",
+    isPinned: false,
     views: 432,
-    isPinned: false,
-    isNew: false,
-  },
-  {
-    id: 5,
-    title: "결제 시스템 개선 안내",
-    content: "더욱 안전하고 편리한 결제를 위해 결제 시스템이 개선되었습니다.",
-    category: "서비스",
-    date: "2024-01-08",
-    views: 321,
-    isPinned: false,
-    isNew: false,
-  },
-  {
-    id: 6,
-    title: "고객센터 운영시간 변경 안내",
-    content: "고객센터 운영시간이 변경됩니다. 새로운 운영시간을 확인해주세요.",
-    category: "서비스",
-    date: "2024-01-05",
-    views: 289,
-    isPinned: false,
-    isNew: false,
+    createdAt: "2024-01-03",
+    author: "MarketAI 고객센터",
   },
 ]
 
-const categories = ["전체", "이벤트", "시스템", "정책", "업데이트", "서비스"]
+const typeLabels = {
+  important: "중요",
+  update: "업데이트",
+  event: "이벤트",
+  maintenance: "점검",
+}
+
+const typeColors = {
+  important: "bg-red-100 text-red-800",
+  update: "bg-blue-100 text-blue-800",
+  event: "bg-green-100 text-green-800",
+  maintenance: "bg-yellow-100 text-yellow-800",
+}
 
 export default function NoticesPage() {
-  const [notices] = useState<Notice[]>(mockNotices)
-  const [selectedCategory, setSelectedCategory] = useState("전체")
-  const [expandedNotice, setExpandedNotice] = useState<number | null>(null)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [selectedNotice, setSelectedNotice] = useState<Notice | null>(null)
 
-  const filteredNotices = notices.filter((notice) => {
-    if (selectedCategory === "전체") return true
-    return notice.category === selectedCategory
-  })
+  const filteredNotices = notices.filter(
+    (notice) =>
+      notice.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      notice.content.toLowerCase().includes(searchTerm.toLowerCase()),
+  )
 
   const pinnedNotices = filteredNotices.filter((notice) => notice.isPinned)
   const regularNotices = filteredNotices.filter((notice) => !notice.isPinned)
 
-  const toggleExpanded = (id: number) => {
-    setExpandedNotice(expandedNotice === id ? null : id)
-  }
+  if (selectedNotice) {
+    return (
+      <div className="min-h-screen bg-gray-50">
+        <div className="max-w-4xl mx-auto px-4 py-6">
+          <div className="mb-4">
+            <Button variant="outline" onClick={() => setSelectedNotice(null)}>
+              ← 목록으로 돌아가기
+            </Button>
+          </div>
 
-  const getCategoryColor = (category: string) => {
-    switch (category) {
-      case "이벤트":
-        return "bg-red-100 text-red-800"
-      case "시스템":
-        return "bg-orange-100 text-orange-800"
-      case "정책":
-        return "bg-blue-100 text-blue-800"
-      case "업데이트":
-        return "bg-green-100 text-green-800"
-      case "서비스":
-        return "bg-purple-100 text-purple-800"
-      default:
-        return "bg-gray-100 text-gray-800"
-    }
+          <Card>
+            <CardHeader>
+              <div className="flex items-center gap-2 mb-2">
+                {selectedNotice.isPinned && <Pin className="w-4 h-4 text-red-500" />}
+                <Badge className={typeColors[selectedNotice.type]}>{typeLabels[selectedNotice.type]}</Badge>
+              </div>
+              <CardTitle className="text-2xl">{selectedNotice.title}</CardTitle>
+              <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-1">
+                  <Calendar className="w-4 h-4" />
+                  {selectedNotice.createdAt}
+                </div>
+                <div className="flex items-center gap-1">
+                  <Eye className="w-4 h-4" />
+                  {selectedNotice.views.toLocaleString()}
+                </div>
+                <span>{selectedNotice.author}</span>
+              </div>
+            </CardHeader>
+            <CardContent>
+              <div className="prose max-w-none">
+                <div className="whitespace-pre-line text-gray-700 leading-relaxed">{selectedNotice.content}</div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+    )
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-4xl mx-auto px-4 py-6">
         {/* 헤더 */}
-        <div className="mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <Bell className="w-8 h-8 text-blue-600" />
-            <h1 className="text-3xl font-bold text-gray-900">공지사항</h1>
-          </div>
-          <p className="text-gray-600">MarketAI의 최신 소식과 중요한 안내사항을 확인하세요</p>
+        <div className="mb-8 text-center">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">공지사항</h1>
+          <p className="text-gray-600">MarketAI의 최신 소식과 정책을 확인하세요</p>
         </div>
 
-        {/* 카테고리 필터 */}
+        {/* 검색 */}
         <div className="mb-6">
-          <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-            <SelectTrigger className="w-48">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {categories.map((category) => (
-                <SelectItem key={category} value={category}>
-                  {category}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-5 h-5" />
+            <Input
+              placeholder="공지사항을 검색하세요..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-10 py-3 text-lg"
+            />
+          </div>
         </div>
 
-        <div className="space-y-6">
-          {/* 고정 공지사항 */}
-          {pinnedNotices.length > 0 && (
-            <div>
-              <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                <Pin className="w-5 h-5 text-red-500" />
-                중요 공지
-              </h2>
-              <div className="space-y-3">
-                {pinnedNotices.map((notice) => (
-                  <Card key={notice.id} className="border-l-4 border-l-red-500">
-                    <CardContent className="p-0">
-                      <button
-                        onClick={() => toggleExpanded(notice.id)}
-                        className="w-full p-6 text-left hover:bg-gray-50 transition-colors"
-                      >
-                        <div className="flex justify-between items-start">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <Pin className="w-4 h-4 text-red-500" />
-                              <Badge className={getCategoryColor(notice.category)}>{notice.category}</Badge>
-                              {notice.isNew && <Badge className="bg-red-500 text-white">NEW</Badge>}
-                            </div>
-                            <h3 className="font-semibold text-gray-900 mb-2">{notice.title}</h3>
-                            <div className="flex items-center gap-4 text-sm text-gray-500">
-                              <div className="flex items-center gap-1">
-                                <Calendar className="w-4 h-4" />
-                                <span>{notice.date}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <Eye className="w-4 h-4" />
-                                <span>{notice.views.toLocaleString()}</span>
-                              </div>
-                            </div>
-                          </div>
-                          <ChevronRight
-                            className={`w-5 h-5 text-gray-400 transition-transform ${
-                              expandedNotice === notice.id ? "rotate-90" : ""
-                            }`}
-                          />
-                        </div>
-                      </button>
-
-                      {expandedNotice === notice.id && (
-                        <div className="px-6 pb-6 border-t bg-gray-50">
-                          <div className="pt-4">
-                            <p className="text-gray-700 leading-relaxed whitespace-pre-line">{notice.content}</p>
-                          </div>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* 일반 공지사항 */}
-          <div>
-            <h2 className="text-lg font-semibold mb-4">전체 공지사항</h2>
+        {/* 고정 공지사항 */}
+        {pinnedNotices.length > 0 && (
+          <div className="mb-8">
+            <h2 className="text-lg font-semibold mb-4 flex items-center gap-2">
+              <Pin className="w-5 h-5 text-red-500" />
+              중요 공지
+            </h2>
             <div className="space-y-3">
-              {regularNotices.map((notice) => (
-                <Card key={notice.id} className="hover:shadow-md transition-shadow">
-                  <CardContent className="p-0">
-                    <button
-                      onClick={() => toggleExpanded(notice.id)}
-                      className="w-full p-6 text-left hover:bg-gray-50 transition-colors"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Badge className={getCategoryColor(notice.category)}>{notice.category}</Badge>
-                            {notice.isNew && <Badge className="bg-red-500 text-white">NEW</Badge>}
-                          </div>
-                          <h3 className="font-semibold text-gray-900 mb-2">{notice.title}</h3>
-                          <div className="flex items-center gap-4 text-sm text-gray-500">
-                            <div className="flex items-center gap-1">
-                              <Calendar className="w-4 h-4" />
-                              <span>{notice.date}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <Eye className="w-4 h-4" />
-                              <span>{notice.views.toLocaleString()}</span>
-                            </div>
-                          </div>
+              {pinnedNotices.map((notice) => (
+                <Card
+                  key={notice.id}
+                  className="border-red-200 bg-red-50 hover:shadow-md transition-shadow cursor-pointer"
+                >
+                  <CardContent className="p-4" onClick={() => setSelectedNotice(notice)}>
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <Pin className="w-4 h-4 text-red-500" />
+                          <Badge className={typeColors[notice.type]}>{typeLabels[notice.type]}</Badge>
                         </div>
-                        <ChevronRight
-                          className={`w-5 h-5 text-gray-400 transition-transform ${
-                            expandedNotice === notice.id ? "rotate-90" : ""
-                          }`}
-                        />
-                      </div>
-                    </button>
-
-                    {expandedNotice === notice.id && (
-                      <div className="px-6 pb-6 border-t bg-gray-50">
-                        <div className="pt-4">
-                          <p className="text-gray-700 leading-relaxed whitespace-pre-line">{notice.content}</p>
+                        <h3 className="font-semibold text-gray-900 mb-1">{notice.title}</h3>
+                        <div className="flex items-center gap-4 text-sm text-gray-500">
+                          <span>{notice.createdAt}</span>
+                          <span className="flex items-center gap-1">
+                            <Eye className="w-3 h-3" />
+                            {notice.views.toLocaleString()}
+                          </span>
                         </div>
                       </div>
-                    )}
+                    </div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           </div>
+        )}
+
+        {/* 일반 공지사항 */}
+        <div className="space-y-3">
+          {regularNotices.map((notice) => (
+            <Card key={notice.id} className="hover:shadow-md transition-shadow cursor-pointer">
+              <CardContent className="p-4" onClick={() => setSelectedNotice(notice)}>
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge className={typeColors[notice.type]}>{typeLabels[notice.type]}</Badge>
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-1">{notice.title}</h3>
+                    <div className="flex items-center gap-4 text-sm text-gray-500">
+                      <span>{notice.createdAt}</span>
+                      <span className="flex items-center gap-1">
+                        <Eye className="w-3 h-3" />
+                        {notice.views.toLocaleString()}
+                      </span>
+                      <span>{notice.author}</span>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
 
-        {/* 빈 상태 */}
         {filteredNotices.length === 0 && (
           <Card>
             <CardContent className="p-12 text-center">
-              <Bell className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold mb-2">공지사항이 없습니다</h3>
-              <p className="text-gray-600">선택한 카테고리에 공지사항이 없습니다</p>
+              <Search className="w-16 h-16 text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold mb-2">검색 결과가 없습니다</h3>
+              <p className="text-gray-600">다른 키워드로 검색해보세요</p>
             </CardContent>
           </Card>
         )}
-
-        {/* 고객센터 링크 */}
-        <Card className="mt-8">
-          <CardContent className="p-6 text-center">
-            <h3 className="text-lg font-semibold mb-2">더 궁금한 점이 있으신가요?</h3>
-            <p className="text-gray-600 mb-4">공지사항에서 찾지 못한 정보는 고객센터에서 확인하세요</p>
-            <div className="flex justify-center space-x-4">
-              <SafeLink href="/help/faq">
-                <Button variant="outline">자주 묻는 질문</Button>
-              </SafeLink>
-              <SafeLink href="/help/contact">
-                <Button>1:1 문의하기</Button>
-              </SafeLink>
-            </div>
-          </CardContent>
-        </Card>
       </div>
     </div>
   )

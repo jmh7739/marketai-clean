@@ -1,35 +1,37 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useState, useEffect } from "react"
 import type { User } from "@/types"
 
 interface AuthContextType {
   user: User | null
-  login: (user: User) => void
-  logout: () => void
   isAuthenticated: boolean
-  isLoading: boolean
+  login: (userData: User) => void
+  logout: () => void
+  updateUser: (userData: Partial<User>) => void
+  loading: boolean
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
+  const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     // 로컬 스토리지에서 사용자 정보 복원
     const savedUser = localStorage.getItem("marketai_user")
     if (savedUser) {
       try {
-        setUser(JSON.parse(savedUser))
+        const userData = JSON.parse(savedUser)
+        setUser(userData)
       } catch (error) {
-        console.error("Failed to parse saved user:", error)
+        console.error("Failed to parse saved user data:", error)
         localStorage.removeItem("marketai_user")
       }
     }
-    setIsLoading(false)
+    setLoading(false)
   }, [])
 
   const login = (userData: User) => {
@@ -42,19 +44,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.removeItem("marketai_user")
   }
 
-  return (
-    <AuthContext.Provider
-      value={{
-        user,
-        login,
-        logout,
-        isAuthenticated: !!user,
-        isLoading,
-      }}
-    >
-      {children}
-    </AuthContext.Provider>
-  )
+  const updateUser = (userData: Partial<User>) => {
+    if (user) {
+      const updatedUser = { ...user, ...userData }
+      setUser(updatedUser)
+      localStorage.setItem("marketai_user", JSON.stringify(updatedUser))
+    }
+  }
+
+  const value: AuthContextType = {
+    user,
+    isAuthenticated: !!user,
+    login,
+    logout,
+    updateUser,
+    loading,
+  }
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

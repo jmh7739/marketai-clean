@@ -1,0 +1,29 @@
+=== VERCEL 환경 변수 설정 ===
+
+Vercel Dashboard → Settings → Environment Variables에 다음 변수들 추가:
+
+=== Firebase 변수 ===
+NEXT_PUBLIC_FIREBASE_API_KEY=AIzaSyB8-Mg4Ol9lM4R6mMVuwt64jlST97GRjog
+NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN=marketai-auction.firebaseapp.com
+NEXT_PUBLIC_FIREBASE_PROJECT_ID=marketai-auction
+NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET=marketai-auction.firebasestorage.app
+NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID=413550271948
+NEXT_PUBLIC_FIREBASE_APP_ID=1:413550271948:web:b8df85cf7415d5dc995169
+NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID=G-22JEGEC53V
+
+=== Supabase 변수 ===
+NEXT_PUBLIC_SUPABASE_URL=https://avbjqxpgletdvgayjqsyi.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTExNjE5NDEsImV4cCI6MjA2NjczNzk0MX0.U7SOisz6JXAuyxkplO0bw-Y1zbGp57LRMT2R1HGqWiY
+SUPABASE_SERVICE_ROLE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImF2YmpxeHBnbGV0dmdheWpxc3lpIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1MTE2MTk0MSwiZXhwIjoyMDY2NzM3OTQxfQ.ZsNrPrreXsm9XnohHdDWUOTbZdUvMKyHf4UKwNw46ug
+
+=== 선택사항 ===
+NEXT_PUBLIC_GA_ID=G-22JEGEC53V (Google Analytics)
+SENTRY_DSN=your_sentry_dsn (에러 추적)
+
+=== 설정 방법 ===
+1. Vercel 대시보드 접속
+2. 프로젝트 선택
+3. Settings → Environment Variables
+4. 위 변수들을 하나씩 추가
+5. Production, Preview, Development 모두 체크
+6. 저장 후 재배포

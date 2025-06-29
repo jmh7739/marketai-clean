@@ -1,85 +1,164 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Users, Package, DollarSign, TrendingUp, AlertTriangle, Eye, MessageSquare, ShoppingCart } from "lucide-react"
+import { Users, Package, DollarSign, AlertTriangle, Eye, MessageSquare, ShoppingCart, RefreshCw } from "lucide-react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts"
 
-// 실제 데이터 구조 (API에서 가져올 데이터)
-interface DashboardData {
+interface DashboardStats {
   totalUsers: number
   activeAuctions: number
   totalRevenue: number
   monthlyGrowth: number
   pendingReports: number
+  pendingRefunds: number
   todayVisitors: number
   todayMessages: number
   todayOrders: number
+  totalTransactions: number
 }
 
 interface Activity {
   id: number
-  type: string
+  type: "user_signup" | "auction_end" | "report" | "payment" | "refund" | "dispute"
   message: string
   timestamp: string
   priority: "low" | "medium" | "high"
+  userId?: string
+  auctionId?: string
 }
 
-interface CategoryData {
-  name: string
-  count: number
-  percentage: number
+interface SalesData {
+  date: string
+  sales: number
+  revenue: number
 }
 
 export default function AdminDashboard() {
   const [timeRange, setTimeRange] = useState("today")
-  const [stats, setStats] = useState<DashboardData>({
+  const [stats, setStats] = useState<DashboardStats>({
     totalUsers: 0,
     activeAuctions: 0,
     totalRevenue: 0,
     monthlyGrowth: 0,
     pendingReports: 0,
+    pendingRefunds: 0,
     todayVisitors: 0,
     todayMessages: 0,
     todayOrders: 0,
+    totalTransactions: 0,
   })
   const [activities, setActivities] = useState<Activity[]>([])
-  const [categories, setCategories] = useState<CategoryData[]>([])
+  const [salesData, setSalesData] = useState<SalesData[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState<Date>(new Date())
 
-  // 실제 데이터 로딩
+  const categoryData = [
+    { name: "전자제품", value: 35, color: "#3B82F6" },
+    { name: "패션", value: 25, color: "#EF4444" },
+    { name: "홈&리빙", value: 20, color: "#10B981" },
+    { name: "스포츠", value: 12, color: "#F59E0B" },
+    { name: "기타", value: 8, color: "#8B5CF6" },
+  ]
+
   useEffect(() => {
-    const loadDashboardData = async () => {
-      setIsLoading(true)
-      try {
-        // 실제 환경에서는 API 호출
-        // const response = await fetch('/api/admin/dashboard')
-        // const data = await response.json()
-
-        // 현재는 빈 데이터로 시작
-        setStats({
-          totalUsers: 0,
-          activeAuctions: 0,
-          totalRevenue: 0,
-          monthlyGrowth: 0,
-          pendingReports: 0,
-          todayVisitors: 0,
-          todayMessages: 0,
-          todayOrders: 0,
-        })
-        setActivities([])
-        setCategories([])
-      } catch (error) {
-        console.error("대시보드 데이터 로딩 실패:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
     loadDashboardData()
+    const interval = setInterval(loadDashboardData, 30000) // 30초마다 업데이트
+    return () => clearInterval(interval)
   }, [timeRange])
+
+  const loadDashboardData = async () => {
+    setIsLoading(true)
+    try {
+      // 실제 환경에서는 API 호출
+      // const [statsRes, activitiesRes, salesRes] = await Promise.all([
+      //   fetch(`/api/admin/stats?range=${timeRange}`),
+      //   fetch('/api/admin/activities'),
+      //   fetch(`/api/admin/sales?range=${timeRange}`)
+      // ])
+
+      // Mock 데이터로 시작 (실제로는 데이터베이스에서 가져옴)
+      setStats({
+        totalUsers: 1247,
+        activeAuctions: 89,
+        totalRevenue: 45670000,
+        monthlyGrowth: 12.5,
+        pendingReports: 3,
+        pendingRefunds: 2,
+        todayVisitors: 342,
+        todayMessages: 156,
+        todayOrders: 23,
+        totalTransactions: 1834,
+      })
+
+      setActivities([
+        {
+          id: 1,
+          type: "user_signup",
+          message: "새로운 사용자 가입: 김철수님",
+          timestamp: "5분 전",
+          priority: "low",
+        },
+        {
+          id: 2,
+          type: "auction_end",
+          message: "iPhone 15 Pro 경매 종료: ₩1,200,000 낙찰",
+          timestamp: "12분 전",
+          priority: "medium",
+        },
+        {
+          id: 3,
+          type: "report",
+          message: "신고 접수: 부적절한 상품 설명",
+          timestamp: "23분 전",
+          priority: "high",
+        },
+        {
+          id: 4,
+          type: "refund",
+          message: "환불 요청: MacBook Air 거래 취소",
+          timestamp: "34분 전",
+          priority: "high",
+        },
+        {
+          id: 5,
+          type: "payment",
+          message: "결제 완료: Galaxy S24 Ultra",
+          timestamp: "45분 전",
+          priority: "medium",
+        },
+      ])
+
+      setSalesData([
+        { date: "2024-01", sales: 245, revenue: 3200000 },
+        { date: "2024-02", sales: 289, revenue: 3800000 },
+        { date: "2024-03", sales: 334, revenue: 4200000 },
+        { date: "2024-04", sales: 378, revenue: 4800000 },
+        { date: "2024-05", sales: 423, revenue: 5400000 },
+        { date: "2024-06", sales: 467, revenue: 6100000 },
+      ])
+
+      setLastUpdated(new Date())
+    } catch (error) {
+      console.error("대시보드 데이터 로딩 실패:", error)
+    } finally {
+      setIsLoading(false)
+    }
+  }
 
   const getActivityIcon = (type: string) => {
     switch (type) {
@@ -91,8 +170,10 @@ export default function AdminDashboard() {
         return <AlertTriangle className="w-4 h-4 text-red-600" />
       case "payment":
         return <DollarSign className="w-4 h-4 text-green-600" />
-      case "auction_start":
-        return <TrendingUp className="w-4 h-4 text-purple-600" />
+      case "refund":
+        return <RefreshCw className="w-4 h-4 text-orange-600" />
+      case "dispute":
+        return <AlertTriangle className="w-4 h-4 text-red-600" />
       default:
         return <Eye className="w-4 h-4 text-gray-600" />
     }
@@ -128,19 +209,27 @@ export default function AdminDashboard() {
           <div className="flex justify-between items-center">
             <div>
               <h1 className="text-3xl font-bold text-gray-900">관리자 대시보드</h1>
-              <p className="text-gray-600 mt-2">MarketAI 플랫폼 현황</p>
+              <p className="text-gray-600 mt-2">
+                MarketAI 플랫폼 현황 • 마지막 업데이트: {lastUpdated.toLocaleTimeString()}
+              </p>
             </div>
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="today">오늘</SelectItem>
-                <SelectItem value="week">이번 주</SelectItem>
-                <SelectItem value="month">이번 달</SelectItem>
-                <SelectItem value="year">올해</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex items-center space-x-3">
+              <Select value={timeRange} onValueChange={setTimeRange}>
+                <SelectTrigger className="w-32">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="today">오늘</SelectItem>
+                  <SelectItem value="week">이번 주</SelectItem>
+                  <SelectItem value="month">이번 달</SelectItem>
+                  <SelectItem value="year">올해</SelectItem>
+                </SelectContent>
+              </Select>
+              <Button onClick={loadDashboardData} variant="outline" size="sm">
+                <RefreshCw className="w-4 h-4 mr-1" />
+                새로고침
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -176,25 +265,27 @@ export default function AdminDashboard() {
               <DollarSign className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">₩{stats.totalRevenue.toLocaleString()}</div>
+              <div className="text-2xl font-bold">₩{(stats.totalRevenue / 10000).toFixed(0)}만</div>
               <p className="text-xs text-muted-foreground">누적 매출</p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">신고 대기</CardTitle>
+              <CardTitle className="text-sm font-medium">처리 대기</CardTitle>
               <AlertTriangle className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-red-600">{stats.pendingReports}</div>
-              <p className="text-xs text-muted-foreground">처리 필요</p>
+              <div className="text-2xl font-bold text-red-600">{stats.pendingReports + stats.pendingRefunds}</div>
+              <p className="text-xs text-muted-foreground">
+                신고 {stats.pendingReports}건 • 환불 {stats.pendingRefunds}건
+              </p>
             </CardContent>
           </Card>
         </div>
 
+        {/* 오늘의 활동 & 차트 */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-          {/* 오늘의 활동 */}
           <Card>
             <CardHeader>
               <CardTitle>오늘의 활동</CardTitle>
@@ -226,43 +317,52 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
 
-          {/* 카테고리 현황 */}
           <Card>
             <CardHeader>
-              <CardTitle>카테고리 현황</CardTitle>
+              <CardTitle>카테고리별 판매 비율</CardTitle>
             </CardHeader>
             <CardContent>
-              {categories.length > 0 ? (
-                <div className="space-y-4">
-                  {categories.map((category, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center space-x-3">
-                        <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
-                          <span className="text-sm font-medium text-blue-600">{index + 1}</span>
-                        </div>
-                        <span className="font-medium">{category.name}</span>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="w-24 bg-gray-200 rounded-full h-2">
-                          <div
-                            className="bg-blue-600 h-2 rounded-full"
-                            style={{ width: `${category.percentage}%` }}
-                          ></div>
-                        </div>
-                        <span className="text-sm text-gray-600 w-12">{category.count}개</span>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <div className="text-center py-8 text-gray-500">
-                  <Package className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                  <p>등록된 상품이 없습니다</p>
-                </div>
-              )}
+              <ResponsiveContainer width="100%" height={200}>
+                <PieChart>
+                  <Pie data={categoryData} cx="50%" cy="50%" outerRadius={60} dataKey="value">
+                    {categoryData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip formatter={(value: number) => [`${value}%`, "비율"]} />
+                </PieChart>
+              </ResponsiveContainer>
+              <div className="flex flex-wrap gap-2 mt-4">
+                {categoryData.map((item, index) => (
+                  <div key={index} className="flex items-center">
+                    <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }} />
+                    <span className="text-sm text-gray-600">
+                      {item.name} ({item.value}%)
+                    </span>
+                  </div>
+                ))}
+              </div>
             </CardContent>
           </Card>
         </div>
+
+        {/* 매출 추이 */}
+        <Card className="mb-8">
+          <CardHeader>
+            <CardTitle>월별 매출 추이</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={salesData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="date" />
+                <YAxis />
+                <Tooltip formatter={(value: number) => [`₩${(value / 10000).toFixed(0)}만`, "매출"]} />
+                <Line type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
 
         {/* 최근 활동 */}
         <Card>
@@ -275,25 +375,18 @@ export default function AdminDashboard() {
             </div>
           </CardHeader>
           <CardContent>
-            {activities.length > 0 ? (
-              <div className="space-y-4">
-                {activities.map((activity) => (
-                  <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg">
-                    <div className="mt-1">{getActivityIcon(activity.type)}</div>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-900">{activity.message}</p>
-                      <p className="text-xs text-gray-500 mt-1">{activity.timestamp}</p>
-                    </div>
-                    <div>{getPriorityBadge(activity.priority)}</div>
+            <div className="space-y-4">
+              {activities.map((activity) => (
+                <div key={activity.id} className="flex items-start space-x-3 p-3 hover:bg-gray-50 rounded-lg">
+                  <div className="mt-1">{getActivityIcon(activity.type)}</div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-gray-900">{activity.message}</p>
+                    <p className="text-xs text-gray-500 mt-1">{activity.timestamp}</p>
                   </div>
-                ))}
-              </div>
-            ) : (
-              <div className="text-center py-8 text-gray-500">
-                <MessageSquare className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                <p>최근 활동이 없습니다</p>
-              </div>
-            )}
+                  <div>{getPriorityBadge(activity.priority)}</div>
+                </div>
+              ))}
+            </div>
           </CardContent>
         </Card>
       </div>
