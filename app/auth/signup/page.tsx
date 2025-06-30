@@ -1,8 +1,7 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -10,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Checkbox } from "@/components/ui/checkbox"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { usePhoneAuth } from "@/hooks/usePhoneAuth"
 import { saveUser, setCurrentUser, generateId } from "@/lib/utils"
 import { useToast } from "@/components/ui/use-toast"
@@ -18,21 +18,26 @@ import type { User } from "@/types"
 export default function SignupPage() {
   const router = useRouter()
   const { toast } = useToast()
-  const { sendVerificationCode, verifyCode, loading, error } = usePhoneAuth()
+  const { sendVerificationCode, verifyCode, resetState, loading, error, isCodeSent } = usePhoneAuth()
 
-  const [step, setStep] = useState(1)
   const [formData, setFormData] = useState({
-    email: "",
     name: "",
+    email: "",
     phoneNumber: "",
     password: "",
     confirmPassword: "",
     agreeTerms: false,
     agreePrivacy: false,
-    agreeMarketing: false,
   })
   const [verificationCode, setVerificationCode] = useState("")
-  const [codeSent, setCodeSent] = useState(false)
+  const [step, setStep] = useState<"phone" | "code" | "info">("phone")
+
+  // Clean up on unmount
+  useEffect(() => {
+    return () => {
+      resetState()
+    }
+  }, [resetState])
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
@@ -46,9 +51,9 @@ export default function SignupPage() {
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!formData.phoneNumber) {
+    if (!formData.phoneNumber.trim()) {
       toast({
-        title: "오류",
+        title: "입력 오류",
         description: "전화번호를 입력해주세요.",
         variant: "destructive",
       })
@@ -57,26 +62,22 @@ export default function SignupPage() {
 
     try {
       await sendVerificationCode(formData.phoneNumber)
-      setCodeSent(true)
+      setStep("code")
       toast({
         title: "인증번호 발송",
-        description: "입력하신 전화번호로 인증번호를 발송했습니다.",
+        description: "입력하신 번호로 인증번호를 발송했습니다.",
       })
     } catch (error) {
-      toast({
-        title: "오류",
-        description: "인증번호 발송에 실패했습니다.",
-        variant: "destructive",
-      })
+      console.error("Failed to send verification code:", error)
     }
   }
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!verificationCode) {
+    if (!verificationCode.trim()) {
       toast({
-        title: "오류",
+        title: "입력 오류",
         description: "인증번호를 입력해주세요.",
         variant: "destructive",
       })
@@ -85,17 +86,13 @@ export default function SignupPage() {
 
     try {
       await verifyCode(verificationCode)
-      setStep(2)
+      setStep("info")
       toast({
         title: "인증 완료",
         description: "전화번호 인증이 완료되었습니다.",
       })
     } catch (error) {
-      toast({
-        title: "오류",
-        description: "인증번호가 올바르지 않습니다.",
-        variant: "destructive",
-      })
+      console.error("Failed to verify code:", error)
     }
   }
 
@@ -103,9 +100,9 @@ export default function SignupPage() {
     e.preventDefault()
 
     // Validation
-    if (!formData.email || !formData.name || !formData.password) {
+    if (!formData.name.trim() || !formData.email.trim() || !formData.password) {
       toast({
-        title: "오류",
+        title: "입력 오류",
         description: "모든 필수 정보를 입력해주세요.",
         variant: "destructive",
       })
@@ -114,7 +111,7 @@ export default function SignupPage() {
 
     if (formData.password !== formData.confirmPassword) {
       toast({
-        title: "오류",
+        title: "입력 오류",
         description: "비밀번호가 일치하지 않습니다.",
         variant: "destructive",
       })
@@ -123,7 +120,7 @@ export default function SignupPage() {
 
     if (!formData.agreeTerms || !formData.agreePrivacy) {
       toast({
-        title: "오류",
+        title: "약관 동의",
         description: "필수 약관에 동의해주세요.",
         variant: "destructive",
       })
@@ -133,8 +130,8 @@ export default function SignupPage() {
     try {
       const newUser: User = {
         id: generateId(),
-        email: formData.email,
         name: formData.name,
+        email: formData.email,
         phoneNumber: formData.phoneNumber,
         phone: formData.phoneNumber,
         createdAt: new Date().toISOString(),
@@ -168,12 +165,16 @@ export default function SignupPage() {
       <Card className="w-full max-w-md">
         <CardHeader>
           <CardTitle className="text-2xl font-bold text-center">회원가입</CardTitle>
-          <CardDescription className="text-center">MarketAI에서 경매를 시작해보세요</CardDescription>
+          <CardDescription className="text-center">
+            {step === "phone" && "전화번호를 입력해주세요"}
+            {step === "code" && "인증번호를 입력해주세요"}
+            {step === "info" && "기본 정보를 입력해주세요"}
+          </CardDescription>
         </CardHeader>
 
-        <CardContent className="space-y-6">
-          {step === 1 && (
-            <form onSubmit={codeSent ? handleVerifyCode : handleSendCode} className="space-y-4">
+        <CardContent>
+          {step === "phone" && (
+            <form onSubmit={handleSendCode} className="space-y-4">
               <div>
                 <Label htmlFor="phoneNumber">전화번호</Label>
                 <Input
@@ -183,51 +184,71 @@ export default function SignupPage() {
                   placeholder="010-1234-5678"
                   value={formData.phoneNumber}
                   onChange={handleInputChange}
-                  disabled={codeSent}
                   required
                 />
+                <p className="text-sm text-gray-500 mt-1">국가번호 없이 입력하세요 (예: 010-1234-5678)</p>
               </div>
 
-              {codeSent && (
-                <div>
-                  <Label htmlFor="verificationCode">인증번호</Label>
-                  <Input
-                    id="verificationCode"
-                    type="text"
-                    placeholder="6자리 인증번호"
-                    value={verificationCode}
-                    onChange={(e) => setVerificationCode(e.target.value)}
-                    maxLength={6}
-                    required
-                  />
-                </div>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
 
-              {error && <div className="text-sm text-red-600 bg-red-50 p-3 rounded-md">{error}</div>}
-
               <Button type="submit" className="w-full" disabled={loading}>
-                {loading ? "처리중..." : codeSent ? "인증번호 확인" : "인증번호 발송"}
+                {loading ? "발송 중..." : "인증번호 받기"}
               </Button>
 
-              <div id="recaptcha-container" />
+              {/* reCAPTCHA container */}
+              <div id="recaptcha-container" className="flex justify-center"></div>
             </form>
           )}
 
-          {step === 2 && (
-            <form onSubmit={handleSignup} className="space-y-4">
+          {step === "code" && (
+            <form onSubmit={handleVerifyCode} className="space-y-4">
               <div>
-                <Label htmlFor="email">이메일</Label>
+                <Label htmlFor="verificationCode">인증번호</Label>
                 <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  placeholder="your@email.com"
-                  value={formData.email}
-                  onChange={handleInputChange}
+                  id="verificationCode"
+                  type="text"
+                  placeholder="6자리 인증번호"
+                  value={verificationCode}
+                  onChange={(e) => setVerificationCode(e.target.value)}
+                  maxLength={6}
                   required
                 />
+                <p className="text-sm text-gray-500 mt-1">{formData.phoneNumber}로 발송된 인증번호를 입력하세요</p>
               </div>
 
+              {error && (
+                <Alert variant="destructive">
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
+              )}
+
+              <div className="space-y-2">
+                <Button type="submit" className="w-full" disabled={loading}>
+                  {loading ? "인증 중..." : "인증번호 확인"}
+                </Button>
+
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-transparent"
+                  onClick={() => {
+                    setStep("phone")
+                    setVerificationCode("")
+                    resetState()
+                  }}
+                >
+                  다시 시도
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {step === "info" && (
+            <form onSubmit={handleSignup} className="space-y-4">
               <div>
                 <Label htmlFor="name">이름</Label>
                 <Input
@@ -236,6 +257,19 @@ export default function SignupPage() {
                   type="text"
                   placeholder="홍길동"
                   value={formData.name}
+                  onChange={handleInputChange}
+                  required
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email">이메일</Label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  placeholder="your@email.com"
+                  value={formData.email}
                   onChange={handleInputChange}
                   required
                 />
@@ -275,7 +309,11 @@ export default function SignupPage() {
                     onCheckedChange={(checked) => handleCheckboxChange("agreeTerms", checked as boolean)}
                   />
                   <Label htmlFor="agreeTerms" className="text-sm">
-                    <span className="text-red-500">*</span> 이용약관에 동의합니다
+                    <span className="text-red-500">*</span>{" "}
+                    <Link href="/terms" className="text-blue-600 hover:underline">
+                      이용약관
+                    </Link>
+                    에 동의합니다
                   </Label>
                 </div>
 
@@ -286,18 +324,11 @@ export default function SignupPage() {
                     onCheckedChange={(checked) => handleCheckboxChange("agreePrivacy", checked as boolean)}
                   />
                   <Label htmlFor="agreePrivacy" className="text-sm">
-                    <span className="text-red-500">*</span> 개인정보처리방침에 동의합니다
-                  </Label>
-                </div>
-
-                <div className="flex items-center space-x-2">
-                  <Checkbox
-                    id="agreeMarketing"
-                    checked={formData.agreeMarketing}
-                    onCheckedChange={(checked) => handleCheckboxChange("agreeMarketing", checked as boolean)}
-                  />
-                  <Label htmlFor="agreeMarketing" className="text-sm">
-                    마케팅 정보 수신에 동의합니다 (선택)
+                    <span className="text-red-500">*</span>{" "}
+                    <Link href="/privacy" className="text-blue-600 hover:underline">
+                      개인정보처리방침
+                    </Link>
+                    에 동의합니다
                   </Label>
                 </div>
               </div>
@@ -308,11 +339,13 @@ export default function SignupPage() {
             </form>
           )}
 
-          <div className="text-center">
-            <span className="text-sm text-gray-600">이미 계정이 있으신가요? </span>
-            <Link href="/auth/login" className="text-sm text-blue-600 hover:underline">
-              로그인
-            </Link>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              이미 계정이 있으신가요?{" "}
+              <Link href="/auth/login" className="text-blue-600 hover:underline">
+                로그인
+              </Link>
+            </p>
           </div>
         </CardContent>
       </Card>

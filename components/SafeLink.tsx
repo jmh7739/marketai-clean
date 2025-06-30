@@ -1,40 +1,43 @@
 "use client"
 
-import Link from "next/link"
-import type { ReactNode } from "react"
+import type React from "react"
 
-interface SafeLinkProps {
+import Link from "next/link"
+import { useRouter } from "next/navigation"
+import type { ComponentProps } from "react"
+
+interface SafeLinkProps extends Omit<ComponentProps<typeof Link>, "href"> {
   href: string
-  children: ReactNode
+  children: React.ReactNode
   className?: string
   onClick?: () => void
 }
 
-export default function SafeLink({ href, children, className, onClick }: SafeLinkProps) {
-  // 외부 링크인지 확인
-  const isExternal = href.startsWith("http") || href.startsWith("//")
+export default function SafeLink({ href, children, className, onClick, ...props }: SafeLinkProps) {
+  const router = useRouter()
 
-  // 해시 링크인지 확인
-  const isHashLink = href.startsWith("#")
+  const handleClick = (e: React.MouseEvent) => {
+    if (onClick) {
+      onClick()
+    }
 
-  if (isExternal) {
-    return (
-      <a href={href} className={className} onClick={onClick} target="_blank" rel="noopener noreferrer">
-        {children}
-      </a>
-    )
-  }
+    // 외부 링크인 경우 새 탭에서 열기
+    if (href.startsWith("http") || href.startsWith("mailto:") || href.startsWith("tel:")) {
+      e.preventDefault()
+      window.open(href, "_blank", "noopener,noreferrer")
+      return
+    }
 
-  if (isHashLink) {
-    return (
-      <a href={href} className={className} onClick={onClick}>
-        {children}
-      </a>
-    )
+    // 내부 링크는 Next.js 라우터 사용
+    if (href.startsWith("/")) {
+      e.preventDefault()
+      router.push(href)
+      return
+    }
   }
 
   return (
-    <Link href={href} className={className} onClick={onClick}>
+    <Link href={href} className={className} onClick={handleClick} {...props}>
       {children}
     </Link>
   )

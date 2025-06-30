@@ -3,37 +3,33 @@ import { getAuth, connectAuthEmulator } from "firebase/auth"
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore"
 
 const firebaseConfig = {
-  apiKey: "demo-api-key",
-  authDomain: "demo-project.firebaseapp.com",
-  projectId: "demo-project",
-  storageBucket: "demo-project.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "demo-app-id",
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY || "AIzaSyB8-Mg4Ol91M4R6mMVuwt64jlST97GRjog",
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN || "marketai-auction.firebaseapp.com",
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID || "marketai-auction",
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET || "marketai-auction.firebasestorage.app",
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID || "413550271948",
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:413550271948:web:b8df85cf7415d5dc995169",
 }
 
-// Initialize Firebase only if it hasn't been initialized
+// Initialize Firebase
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 
-// Initialize Auth
+// Initialize services
 export const auth = getAuth(app)
-
-// Initialize Firestore
 export const db = getFirestore(app)
 
-// Connect to emulators in development (only in browser)
+// Connect to emulators in development
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   try {
-    connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true })
-    console.log("Connected to Firebase Auth emulator")
+    // Only connect if not already connected
+    if (!auth.config.emulator) {
+      connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true })
+    }
+    if (!(db as any)._delegate._databaseId.projectId.includes("localhost")) {
+      connectFirestoreEmulator(db, "localhost", 8080)
+    }
   } catch (error) {
-    console.log("Auth emulator connection failed:", error)
-  }
-
-  try {
-    connectFirestoreEmulator(db, "localhost", 8080)
-    console.log("Connected to Firestore emulator")
-  } catch (error) {
-    console.log("Firestore emulator connection failed:", error)
+    console.log("Emulators already connected or not available")
   }
 }
 

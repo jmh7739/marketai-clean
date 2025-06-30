@@ -10,6 +10,7 @@ import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import SafeLink from "@/components/SafeLink"
 import { useAuth } from "@/contexts/AuthContext"
+import { generateId } from "@/lib/utils"
 
 export default function LoginPage() {
   const [formData, setFormData] = useState({
@@ -67,7 +68,7 @@ export default function LoginPage() {
       } else {
         // 일반 로그인 처리 (실제로는 서버 API 호출)
         const userData = {
-          id: "user-" + Date.now(),
+          id: "user-" + generateId(),
           name: formData.email.split("@")[0],
           email: formData.email,
           phone: "",

@@ -2,264 +2,268 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Phone, AlertCircle, CheckCircle, ArrowRight, ArrowLeft } from "lucide-react"
+import { useRouter } from "next/navigation"
+import { Phone, Shield, ArrowRight, AlertCircle, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { useAuth } from "@/contexts/AuthContext"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 import { usePhoneAuth } from "@/hooks/usePhoneAuth"
-import type { User as UserType } from "@/types"
+import { useAuth } from "@/contexts/AuthContext"
+import { generateId, saveUser, setCurrentUser } from "@/lib/utils"
+import SafeLink from "@/components/SafeLink"
+import type { User } from "@/types"
 
 export default function PhoneAuthPage() {
   const [phoneNumber, setPhoneNumber] = useState("")
-  const [showVerification, setShowVerification] = useState(false)
-  const [error, setError] = useState("")
+  const [verificationCode, setVerificationCode] = useState("")
+  const [step, setStep] = useState<"phone" | "code">("phone")
+  const [success, setSuccess] = useState("")
 
   const router = useRouter()
-  const searchParams = useSearchParams()
   const { login } = useAuth()
-  const {
-    verificationCode,
-    setVerificationCode,
-    loading: phoneLoading,
-    error: phoneError,
-    cooldown,
-    smsSent,
-    sendVerificationCode,
-    verifyCode,
-    clearError,
-  } = usePhoneAuth()
+  const { sendVerificationCode, verifyCode, resetState, loading, error, isCodeSent } = usePhoneAuth()
 
-  const redirectTo = searchParams.get("redirect") || "/"
-  const prefilledPhone = searchParams.get("phone") || ""
-
+  // Clean up on unmount
   useEffect(() => {
-    if (prefilledPhone) {
-      setPhoneNumber(prefilledPhone)
+    return () => {
+      resetState()
     }
-  }, [prefilledPhone])
-
-  const formatPhoneNumber = (value: string) => {
-    const numbers = value.replace(/[^\d]/g, "")
-    if (numbers.length <= 3) {
-      return numbers
-    } else if (numbers.length <= 7) {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3)}`
-    } else {
-      return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`
-    }
-  }
-
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^010-\d{4}-\d{4}$/
-    return phoneRegex.test(phone)
-  }
-
-  const handlePhoneChange = (value: string) => {
-    const formatted = formatPhoneNumber(value)
-    setPhoneNumber(formatted)
-    setError("")
-    clearError()
-  }
+  }, [resetState])
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!validatePhone(phoneNumber)) {
-      setError("올바른 전화번호를 입력해주세요 (010-XXXX-XXXX)")
+    if (!phoneNumber.trim()) {
       return
     }
 
-    const result = await sendVerificationCode(phoneNumber)
-    if (result.success) {
-      setShowVerification(true)
+    try {
+      await sendVerificationCode(phoneNumber)
+      setStep("code")
+      setSuccess("인증번호가 발송되었습니다.")
+    } catch (error) {
+      console.error("Failed to send verification code:", error)
     }
   }
 
   const handleVerifyCode = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    const result = await verifyCode()
-    if (result.success && result.user) {
-      const userData: UserType = {
-        id: result.user.uid,
-        name: result.user.displayName || "사용자",
-        email: result.user.email || "",
-        phone: phoneNumber,
-        avatar: result.user.photoURL || "",
+    if (!verificationCode.trim()) {
+      return
+    }
+
+    try {
+      const firebaseUser = await verifyCode(verificationCode)
+
+      // 새 사용자 생성
+      const newUser: User = {
+        id: generateId(),
+        name: firebaseUser.displayName || `사용자${Date.now()}`,
+        email: firebaseUser.email || "",
+        phone: firebaseUser.phoneNumber || phoneNumber,
+        phoneNumber: firebaseUser.phoneNumber || phoneNumber,
         createdAt: new Date().toISOString(),
         isVerified: true,
-        role: "user",
-        status: "active",
-        lastLoginAt: new Date().toISOString(),
-        preferences: {
-          notifications: true,
-          marketing: false,
-          language: "ko",
-        },
+        verified: true,
+        joinDate: new Date().toISOString(),
+        rating: 0,
+        totalSales: 0,
+        totalPurchases: 0,
       }
 
-      login(userData)
-      router.push(redirectTo)
+      // 사용자 저장 및 로그인
+      saveUser(newUser)
+      setCurrentUser(newUser)
+      login(newUser)
+
+      setSuccess("인증이 완료되었습니다!")
+
+      // 홈으로 리다이렉트
+      setTimeout(() => {
+        router.push("/")
+      }, 1500)
+    } catch (error) {
+      console.error("Failed to verify code:", error)
     }
   }
 
-  const handleBackToPhone = () => {
-    setShowVerification(false)
-    setVerificationCode("")
-    clearError()
+  const formatPhoneNumber = (value: string) => {
+    const numbers = value.replace(/[^\d]/g, "")
+    if (numbers.length <= 3) return numbers
+    if (numbers.length <= 7) return `${numbers.slice(0, 3)}-${numbers.slice(3)}`
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`
   }
 
-  const handleBackToLogin = () => {
-    const params = new URLSearchParams()
-    if (redirectTo !== "/") {
-      params.set("redirect", redirectTo)
-    }
-
-    const url = `/auth/login${params.toString() ? `?${params.toString()}` : ""}`
-    router.push(url)
+  const handlePhoneNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const formatted = formatPhoneNumber(e.target.value)
+    setPhoneNumber(formatted)
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 to-blue-50 flex items-center justify-center p-4">
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <div className="mx-auto w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-            <Phone className="w-6 h-6 text-blue-600" />
+          <div className="mx-auto w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mb-4">
+            {step === "phone" ? (
+              <Phone className="w-6 h-6 text-green-600" />
+            ) : (
+              <Shield className="w-6 h-6 text-green-600" />
+            )}
           </div>
-          <CardTitle className="text-2xl font-bold">{!showVerification ? "전화번호 인증" : "인증번호 확인"}</CardTitle>
+          <CardTitle className="text-2xl font-bold">{step === "phone" ? "전화번호 인증" : "인증번호 확인"}</CardTitle>
           <p className="text-gray-600 mt-2">
-            {!showVerification
-              ? "전화번호로 간편하게 로그인하세요"
-              : `${phoneNumber}으로 발송된 인증번호를 입력해주세요`}
+            {step === "phone"
+              ? "안전한 거래를 위해 전화번호를 인증해주세요"
+              : `${phoneNumber}로 발송된 인증번호를 입력해주세요`}
           </p>
         </CardHeader>
 
         <CardContent>
-          {!showVerification ? (
-            <form onSubmit={handleSendCode} className="space-y-6">
+          {step === "phone" ? (
+            <form onSubmit={handleSendCode} className="space-y-4">
               <div>
-                <Label htmlFor="phone" className="text-sm font-medium">
+                <Label htmlFor="phoneNumber" className="text-sm font-medium">
                   전화번호
                 </Label>
                 <div className="relative mt-1">
                   <Phone className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
                   <Input
-                    id="phone"
+                    id="phoneNumber"
                     type="tel"
                     value={phoneNumber}
-                    onChange={(e) => handlePhoneChange(e.target.value)}
+                    onChange={handlePhoneNumberChange}
                     placeholder="010-1234-5678"
                     className="pl-10"
                     maxLength={13}
-                    disabled={phoneLoading}
+                    disabled={loading}
                   />
                 </div>
+                <p className="text-sm text-gray-500 mt-1">국가번호 없이 입력하세요 (예: 010-1234-5678)</p>
               </div>
 
-              {(error || phoneError) && (
-                <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <AlertCircle className="w-4 h-4 text-red-500" />
-                  <p className="text-red-700 text-sm">{error || phoneError}</p>
-                </div>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
 
-              <div className="space-y-3">
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={phoneLoading || cooldown > 0 || !validatePhone(phoneNumber)}
-                >
-                  {phoneLoading ? (
-                    <div className="flex items-center">
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      인증번호 발송 중...
-                    </div>
-                  ) : cooldown > 0 ? (
-                    `${cooldown}초 후 재시도`
-                  ) : (
-                    <div className="flex items-center justify-center">
-                      인증번호 받기
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </div>
-                  )}
-                </Button>
+              {success && (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription className="text-green-700">{success}</AlertDescription>
+                </Alert>
+              )}
 
-                <Button type="button" variant="outline" className="w-full" onClick={handleBackToLogin}>
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  다른 방법으로 로그인
-                </Button>
-              </div>
+              <Button type="submit" className="w-full" disabled={loading || !phoneNumber.trim()}>
+                {loading ? (
+                  <div className="flex items-center">
+                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                    인증번호 발송 중...
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-center">
+                    인증번호 받기
+                    <ArrowRight className="w-4 h-4 ml-2" />
+                  </div>
+                )}
+              </Button>
+
+              {/* reCAPTCHA container */}
+              <div id="recaptcha-container" className="flex justify-center mt-4"></div>
             </form>
           ) : (
-            <form onSubmit={handleVerifyCode} className="space-y-6">
+            <form onSubmit={handleVerifyCode} className="space-y-4">
               <div>
-                <Label htmlFor="code" className="text-sm font-medium">
-                  인증번호 (6자리)
+                <Label htmlFor="verificationCode" className="text-sm font-medium">
+                  인증번호
                 </Label>
-                <Input
-                  id="code"
-                  type="text"
-                  value={verificationCode}
-                  onChange={(e) => setVerificationCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
-                  placeholder="000000"
-                  maxLength={6}
-                  className="mt-1 text-center text-lg tracking-widest"
-                  disabled={phoneLoading}
-                />
+                <div className="relative mt-1">
+                  <Shield className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Input
+                    id="verificationCode"
+                    type="text"
+                    value={verificationCode}
+                    onChange={(e) => setVerificationCode(e.target.value)}
+                    placeholder="6자리 인증번호"
+                    className="pl-10 text-center text-lg tracking-widest"
+                    maxLength={6}
+                    disabled={loading}
+                  />
+                </div>
+                <p className="text-sm text-gray-500 mt-1">SMS로 받은 6자리 숫자를 입력하세요</p>
               </div>
 
-              {smsSent && (
-                <div className="flex items-center space-x-2 p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <CheckCircle className="w-4 h-4 text-green-500" />
-                  <p className="text-green-700 text-sm">인증번호가 발송되었습니다.</p>
-                </div>
+              {error && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>{error}</AlertDescription>
+                </Alert>
               )}
 
-              {(error || phoneError) && (
-                <div className="flex items-center space-x-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <AlertCircle className="w-4 h-4 text-red-500" />
-                  <p className="text-red-700 text-sm">{error || phoneError}</p>
-                </div>
+              {success && (
+                <Alert>
+                  <CheckCircle className="h-4 w-4" />
+                  <AlertDescription className="text-green-700">{success}</AlertDescription>
+                </Alert>
               )}
 
-              <div className="space-y-3">
-                <Button type="submit" className="w-full" disabled={verificationCode.length !== 6 || phoneLoading}>
-                  {phoneLoading ? (
+              <div className="space-y-2">
+                <Button type="submit" className="w-full" disabled={loading || !verificationCode.trim()}>
+                  {loading ? (
                     <div className="flex items-center">
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                      로그인 중...
+                      인증 중...
                     </div>
                   ) : (
-                    "로그인"
+                    <div className="flex items-center justify-center">
+                      인증 완료
+                      <CheckCircle className="w-4 h-4 ml-2" />
+                    </div>
                   )}
                 </Button>
 
-                <Button type="button" variant="outline" className="w-full" onClick={handleBackToPhone}>
-                  전화번호 다시 입력
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full bg-transparent"
+                  onClick={() => {
+                    setStep("phone")
+                    setVerificationCode("")
+                    setSuccess("")
+                    resetState()
+                  }}
+                  disabled={loading}
+                >
+                  다시 시도
                 </Button>
-              </div>
-
-              <div className="text-center">
-                <p className="text-sm text-gray-600">
-                  인증번호가 오지 않나요?{" "}
-                  <button
-                    type="button"
-                    className="text-blue-600 hover:underline"
-                    onClick={() => sendVerificationCode(phoneNumber)}
-                    disabled={cooldown > 0 || phoneLoading}
-                  >
-                    {cooldown > 0 ? `${cooldown}초 후 재발송` : "다시 발송"}
-                  </button>
-                </p>
               </div>
             </form>
           )}
 
-          {/* reCAPTCHA 컨테이너 */}
-          <div id="recaptcha-container"></div>
+          <div className="mt-6 text-center">
+            <p className="text-sm text-gray-600">
+              다른 방법으로 로그인하시겠어요?{" "}
+              <SafeLink href="/auth/login" className="text-blue-600 hover:underline font-medium">
+                이메일로 로그인
+              </SafeLink>
+            </p>
+          </div>
+
+          <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+            <div className="flex items-start space-x-3">
+              <Shield className="w-5 h-5 text-blue-600 mt-0.5" />
+              <div>
+                <h4 className="font-medium text-blue-900 mb-1">안전한 인증</h4>
+                <p className="text-sm text-blue-700">
+                  SMS 인증을 통해 계정을 안전하게 보호하고 신뢰할 수 있는 거래 환경을 제공합니다.
+                </p>
+              </div>
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

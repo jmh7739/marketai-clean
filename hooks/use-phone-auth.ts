@@ -1,94 +1,151 @@
 "use client"
 
-import { useState } from "react"
-import { auth } from "@/lib/firebase"
-import {
+import { useCallback, useEffect, useRef, useState } from "react"
+import { getClientAuth } from "@/lib/firebase"
+import type {
+  ConfirmationResult,
   RecaptchaVerifier,
-  signInWithPhoneNumber,
-  type ConfirmationResult,
-  type User as FirebaseUser,
+  signInWithPhoneNumber as SignInWithPhoneNumberFn,
 } from "firebase/auth"
 
-interface PhoneAuthState {
-  loading: boolean
-  error: string | null
-  confirmationResult: ConfirmationResult | null
+/* ───────────────────── utils ───────────────────── */
+const toE164 = (raw: string): string => {
+  const digits = raw.replace(/[^\d]/g, "")
+  if (digits.startsWith("010")) return "+8210" + digits.slice(3)
+  if (digits.startsWith("01")) return "+821" + digits.slice(2)
+  if (digits.startsWith("82")) return "+" + digits
+  return "+82" + digits
 }
 
+/* ───────────────────── hook ───────────────────── */
 export function usePhoneAuth() {
-  const [state, setState] = useState<PhoneAuthState>({
-    loading: false,
-    error: null,
-    confirmationResult: null,
-  })
+  /* ui state */
+  const [verificationCode, setVerificationCode] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+  const [smsSent, setSmsSent] = useState(false)
 
-  const setupRecaptcha = () => {
-    if (typeof window !== "undefined") {
-      const recaptchaContainer = document.getElementById("recaptcha-container")
-      if (recaptchaContainer && !(window as any).recaptchaVerifier) {
-        ;(window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
-          size: "invisible",
-          callback: () => {
-            console.log("reCAPTCHA solved")
-          },
-          "expired-callback": () => {
-            console.log("reCAPTCHA expired")
-          },
-        })
+  /* cooldown timer */
+  const [cooldown, setCooldown] = useState(0)
+  const cooldownRef = useRef<NodeJS.Timeout | null>(null)
+
+  /* firebase confirmation */
+  const [confirmResult, setConfirmResult] = useState<ConfirmationResult | null>(null)
+
+  /* clean up interval on unmount */
+  useEffect(() => {
+    return () => {
+      if (cooldownRef.current) clearInterval(cooldownRef.current)
+      try {
+        ;(window as any).recaptchaVerifier?.clear?.()
+      } catch {
+        /* silent */
       }
     }
+  }, [])
+
+  /* start cooldown – 60s default */
+  const startCooldown = (seconds = 60) => {
+    setCooldown(seconds)
+    cooldownRef.current = setInterval(() => {
+      setCooldown((prev) => {
+        if (prev <= 1 && cooldownRef.current) {
+          clearInterval(cooldownRef.current)
+          cooldownRef.current = null
+          return 0
+        }
+        return prev - 1
+      })
+    }, 1_000)
   }
 
-  const sendVerificationCode = async (phoneNumber: string): Promise<ConfirmationResult> => {
-    setState((prev) => ({ ...prev, loading: true, error: null }))
+  /* helper to lazily create invisible recaptcha */
+  const getRecaptcha = async (): Promise<RecaptchaVerifier> => {
+    const auth = getClientAuth()
+    const { RecaptchaVerifier } = (await import("firebase/auth")) as typeof import("firebase/auth")
+    if (!document.getElementById("recaptcha-container")) {
+      const el = document.createElement("div")
+      el.id = "recaptcha-container"
+      el.style.display = "none"
+      document.body.appendChild(el)
+    }
+
+    if (!(window as any).recaptchaVerifier) {
+      ;(window as any).recaptchaVerifier = new RecaptchaVerifier(auth, "recaptcha-container", {
+        size: "invisible",
+      })
+    }
+
+    return (window as any).recaptchaVerifier as RecaptchaVerifier
+  }
+
+  /* ───────────── public api ───────────── */
+  const sendVerificationCode = useCallback(
+    async (phone: string) => {
+      if (cooldown > 0) return { success: false, message: `${cooldown}초 후 다시 시도해 주세요.` }
+
+      try {
+        setLoading(true)
+        setError(null)
+
+        const auth = getClientAuth()
+        const verifier = await getRecaptcha()
+        const { signInWithPhoneNumber } = (await import("firebase/auth")) as {
+          signInWithPhoneNumber: SignInWithPhoneNumberFn
+        }
+
+        const confirmation = await signInWithPhoneNumber(auth, toE164(phone), verifier)
+        setConfirmResult(confirmation)
+        setSmsSent(true)
+        startCooldown(60)
+        return { success: true }
+      } catch (e: any) {
+        setError(e?.message ?? "인증번호 발송 중 오류가 발생했습니다.")
+        return { success: false, message: error }
+      } finally {
+        setLoading(false)
+      }
+    },
+    [cooldown, error],
+  )
+
+  const verifyCode = useCallback(async () => {
+    if (!confirmResult) {
+      setError("먼저 인증번호를 요청해 주세요.")
+      return { success: false }
+    }
+    if (verificationCode.length !== 6) {
+      setError("6자리 인증번호를 입력해 주세요.")
+      return { success: false }
+    }
 
     try {
-      setupRecaptcha()
-      const appVerifier = (window as any).recaptchaVerifier
-      const confirmationResult = await signInWithPhoneNumber(auth, phoneNumber, appVerifier)
-
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        confirmationResult,
-      }))
-
-      return confirmationResult
-    } catch (error: any) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: error.message || "전화번호 인증 요청에 실패했습니다",
-      }))
-      throw error
+      setLoading(true)
+      const result = await confirmResult.confirm(verificationCode)
+      return { success: true, user: result.user }
+    } catch (e: any) {
+      setError(e?.message ?? "인증에 실패했습니다. 다시 시도해 주세요.")
+      return { success: false }
+    } finally {
+      setLoading(false)
     }
-  }
+  }, [confirmResult, verificationCode])
 
-  const verifyCode = async (code: string): Promise<FirebaseUser> => {
-    if (!state.confirmationResult) {
-      throw new Error("인증 요청을 먼저 해주세요")
-    }
-
-    setState((prev) => ({ ...prev, loading: true, error: null }))
-
-    try {
-      const result = await state.confirmationResult.confirm(code)
-      setState((prev) => ({ ...prev, loading: false }))
-      return result.user
-    } catch (error: any) {
-      setState((prev) => ({
-        ...prev,
-        loading: false,
-        error: "인증번호가 올바르지 않습니다",
-      }))
-      throw error
-    }
-  }
+  const clearError = () => setError(null)
 
   return {
+    /* state */
+    verificationCode,
+    setVerificationCode,
+    loading,
+    error,
+    cooldown,
+    smsSent,
+    /* actions */
     sendVerificationCode,
     verifyCode,
-    loading: state.loading,
-    error: state.error,
+    clearError,
   }
 }
+
+export default usePhoneAuth
