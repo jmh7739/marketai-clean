@@ -68,7 +68,8 @@ export class BuyerProtectionSystem {
 
       return { success: true, caseId: protectionCase.id }
     } catch (error) {
-      return { success: false, error: error.message }
+      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"
+      return { success: false, error: errorMessage }
     }
   }
 
@@ -121,7 +122,8 @@ export class BuyerProtectionSystem {
 
       return { success: true }
     } catch (error) {
-      return { success: false, error: error.message }
+      const errorMessage = error instanceof Error ? error.message : "알 수 없는 오류가 발생했습니다"
+      return { success: false, error: errorMessage }
     }
   }
 }

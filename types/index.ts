@@ -2,23 +2,22 @@ export interface User {
   id: string
   name: string
   email: string
+  phoneNumber: string
   phone: string
-  phoneNumber?: string
-  avatar?: string
   createdAt: string
-  isVerified?: boolean
-  verified?: boolean
-  role?: "user" | "admin"
-  status?: "active" | "suspended"
-  lastLoginAt?: string
-  joinDate?: string
-  rating?: number
-  totalSales?: number
-  totalPurchases?: number
-  preferences?: {
-    notifications: boolean
-    marketing: boolean
-    language: string
+  verified: boolean
+  joinDate: string
+  rating: number
+  totalSales: number
+  totalPurchases: number
+  avatar?: string
+  bio?: string
+  location?: string
+  preferredCategories?: string[]
+  notificationSettings?: {
+    email: boolean
+    sms: boolean
+    push: boolean
   }
 }
 
@@ -26,30 +25,28 @@ export interface Auction {
   id: string
   title: string
   description: string
-  category: string
-  subcategory?: string
-  condition: "new" | "like-new" | "good" | "fair" | "poor"
   images: string[]
   startingPrice: number
   currentPrice: number
   buyNowPrice?: number
   reservePrice?: number
-  startTime: string
-  endTime: string
   sellerId: string
   sellerName: string
-  status: "draft" | "active" | "ended" | "cancelled"
+  category: string
+  condition: "new" | "like_new" | "good" | "fair" | "poor"
+  startTime: string
+  endTime: string
+  status: "upcoming" | "active" | "ended" | "cancelled"
   bidCount: number
-  watchers: number
-  location?: string
+  watchCount: number
+  location: string
   shippingOptions: ShippingOption[]
   paymentMethods: string[]
-  returnPolicy?: string
-  tags?: string[]
-  featured?: boolean
-  promoted?: boolean
+  returnPolicy: string
   createdAt: string
   updatedAt: string
+  featured?: boolean
+  tags?: string[]
 }
 
 export interface Bid {
@@ -58,11 +55,64 @@ export interface Bid {
   bidderId: string
   bidderName: string
   amount: number
-  maxBid?: number
   timestamp: string
-  isWinning: boolean
   isAutoBid?: boolean
-  proxyBid?: boolean
+  maxBid?: number
+}
+
+export interface ShippingOption {
+  id: string
+  name: string
+  price: number
+  estimatedDays: number
+  trackingAvailable: boolean
+}
+
+export interface Category {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  parentId?: string
+  children?: Category[]
+  imageUrl?: string
+  itemCount?: number
+}
+
+export interface SearchFilters {
+  query?: string
+  category?: string
+  minPrice?: number
+  maxPrice?: number
+  condition?: string[]
+  location?: string
+  shippingOptions?: string[]
+  sortBy?: "relevance" | "price_low" | "price_high" | "ending_soon" | "newest"
+  itemsPerPage?: number
+  page?: number
+}
+
+export interface Notification {
+  id: string
+  userId: string
+  type: "bid_placed" | "auction_won" | "auction_lost" | "payment_received" | "item_shipped" | "message_received"
+  title: string
+  message: string
+  read: boolean
+  createdAt: string
+  actionUrl?: string
+  metadata?: Record<string, any>
+}
+
+export interface Message {
+  id: string
+  senderId: string
+  receiverId: string
+  auctionId?: string
+  content: string
+  timestamp: string
+  read: boolean
+  type: "text" | "image" | "system"
 }
 
 export interface Transaction {
@@ -71,16 +121,16 @@ export interface Transaction {
   buyerId: string
   sellerId: string
   amount: number
-  status: "pending" | "paid" | "shipped" | "delivered" | "completed" | "cancelled"
+  status: "pending" | "paid" | "shipped" | "delivered" | "completed" | "disputed" | "cancelled"
   paymentMethod: string
   shippingAddress: Address
   trackingNumber?: string
-  completedAt?: string
   createdAt: string
   updatedAt: string
 }
 
 export interface Address {
+  id?: string
   name: string
   phone: string
   address1: string
@@ -89,34 +139,27 @@ export interface Address {
   state: string
   zipCode: string
   country: string
+  isDefault?: boolean
 }
 
-export interface ShippingOption {
+export interface PaymentMethod {
   id: string
+  type: "card" | "bank_transfer" | "paypal" | "crypto"
   name: string
-  price: number
-  estimatedDays: number
-  description?: string
-}
-
-export interface Category {
-  id: string
-  name: string
-  slug: string
-  icon?: string
-  parentId?: string
-  subcategories?: Category[]
-}
-
-export interface Notification {
-  id: string
-  userId: string
-  type: "bid" | "outbid" | "won" | "payment" | "shipping" | "system"
-  title: string
-  message: string
-  read: boolean
+  details: Record<string, any>
+  isDefault: boolean
   createdAt: string
-  data?: any
+}
+
+export interface Review {
+  id: string
+  transactionId: string
+  reviewerId: string
+  revieweeId: string
+  rating: number
+  comment: string
+  type: "buyer" | "seller"
+  createdAt: string
 }
 
 export interface WatchlistItem {
@@ -126,83 +169,37 @@ export interface WatchlistItem {
   createdAt: string
 }
 
-export interface Review {
+export interface AdminUser {
   id: string
-  fromUserId: string
-  toUserId: string
-  auctionId: string
-  rating: number
-  comment: string
-  type: "buyer" | "seller"
+  username: string
+  email: string
+  role: "admin" | "moderator" | "support"
+  permissions: string[]
   createdAt: string
+  lastLogin?: string
 }
 
-export interface Message {
+export interface SystemSettings {
   id: string
-  conversationId: string
-  senderId: string
-  receiverId: string
-  content: string
-  type: "text" | "image" | "system"
-  read: boolean
-  createdAt: string
-}
-
-export interface Conversation {
-  id: string
-  participants: string[]
-  auctionId?: string
-  lastMessage?: Message
+  key: string
+  value: any
+  description?: string
   updatedAt: string
-  createdAt: string
+  updatedBy: string
 }
 
-export interface PaymentMethod {
-  id: string
-  userId: string
-  type: "card" | "bank" | "paypal"
-  name: string
-  details: any
-  isDefault: boolean
-  createdAt: string
+export interface ApiResponse<T = any> {
+  success: boolean
+  data?: T
+  error?: string
+  message?: string
 }
 
-export interface AdminStats {
-  totalUsers: number
-  totalAuctions: number
-  totalTransactions: number
-  totalRevenue: number
-  activeAuctions: number
-  pendingPayments: number
-  disputedTransactions: number
-  newUsersToday: number
-}
-
-export interface SearchFilters {
-  query?: string
-  category?: string
-  subcategory?: string
-  minPrice?: number
-  maxPrice?: number
-  condition?: string[]
-  location?: string
-  endingSoon?: boolean
-  buyNowOnly?: boolean
-  sortBy?: "ending" | "price-low" | "price-high" | "newest" | "popular"
-}
-
-export interface AuctionFormData {
-  title: string
-  description: string
-  category: string
-  subcategory?: string
-  condition: string
-  images: File[]
-  startingPrice: number
-  buyNowPrice?: number
-  reservePrice?: number
-  duration: number
-  location: string
-  shippingOptions: ShippingOption[]
-  returnPolicy: string
+export interface PaginatedResponse<T = any> {
+  items: T[]
+  total: number
+  page: number
+  limit: number
+  hasNext: boolean
+  hasPrev: boolean
 }

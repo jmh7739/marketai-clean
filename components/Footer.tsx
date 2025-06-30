@@ -1,141 +1,156 @@
 "use client"
 
-import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from "lucide-react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import SafeLink from "@/components/SafeLink"
+import { Separator } from "@/components/ui/separator"
+import { Facebook, Twitter, Instagram, Youtube, Mail, Phone, MapPin } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <footer className="bg-gray-900 text-gray-300">
+      <div className="container mx-auto px-4 py-12">
+        {/* Main Footer Content */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-          {/* 회사 정보 */}
-          <div>
-            <div className="flex items-center space-x-2 mb-4">
-              <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                <span className="text-white font-bold">M</span>
+          {/* Company Info */}
+          <div className="space-y-4">
+            <div className="flex items-center space-x-2">
+              <div className="h-8 w-8 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center">
+                <span className="text-white font-bold text-sm">M</span>
               </div>
-              <span className="text-xl font-bold">MarketAI</span>
+              <span className="font-bold text-xl text-white">MarketAI</span>
             </div>
-            <p className="text-gray-400 mb-4">AI 기술로 더 스마트하고 안전한 온라인 경매 플랫폼을 제공합니다.</p>
+            <p className="text-sm text-gray-400">AI 기반 스마트 경매 플랫폼으로 안전하고 투명한 거래를 제공합니다.</p>
             <div className="flex space-x-4">
-              <Button variant="ghost" size="sm" className="p-2">
-                <Facebook className="w-5 h-5" />
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-2">
+                <Facebook className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-2">
-                <Twitter className="w-5 h-5" />
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-2">
+                <Twitter className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-2">
-                <Instagram className="w-5 h-5" />
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-2">
+                <Instagram className="h-4 w-4" />
               </Button>
-              <Button variant="ghost" size="sm" className="p-2">
-                <Youtube className="w-5 h-5" />
+              <Button variant="ghost" size="sm" className="text-gray-400 hover:text-white p-2">
+                <Youtube className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          {/* 서비스 */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">서비스</h3>
-            <ul className="space-y-2">
+          {/* Quick Links */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white">빠른 링크</h3>
+            <ul className="space-y-2 text-sm">
               <li>
-                <SafeLink href="/live-auctions" className="text-gray-400 hover:text-white transition-colors">
-                  실시간 경매
-                </SafeLink>
+                <Link href="/live-auctions" className="hover:text-white transition-colors">
+                  라이브 경매
+                </Link>
               </li>
               <li>
-                <SafeLink href="/ending-soon" className="text-gray-400 hover:text-white transition-colors">
-                  마감임박 경매
-                </SafeLink>
+                <Link href="/ending-soon" className="hover:text-white transition-colors">
+                  마감 임박
+                </Link>
               </li>
               <li>
-                <SafeLink href="/sell" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/sell" className="hover:text-white transition-colors">
                   판매하기
-                </SafeLink>
+                </Link>
               </li>
               <li>
-                <SafeLink href="/local-trade" className="text-gray-400 hover:text-white transition-colors">
-                  직거래
-                </SafeLink>
+                <Link href="/search/advanced" className="hover:text-white transition-colors">
+                  고급 검색
+                </Link>
+              </li>
+              <li>
+                <Link href="/events" className="hover:text-white transition-colors">
+                  이벤트
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* 고객지원 */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">고객지원</h3>
-            <ul className="space-y-2">
+          {/* Customer Service */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white">고객 서비스</h3>
+            <ul className="space-y-2 text-sm">
               <li>
-                <SafeLink href="/help/faq" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/help/faq" className="hover:text-white transition-colors">
                   자주 묻는 질문
-                </SafeLink>
+                </Link>
               </li>
               <li>
-                <SafeLink href="/help/contact" className="text-gray-400 hover:text-white transition-colors">
-                  문의하기
-                </SafeLink>
+                <Link href="/help/contact" className="hover:text-white transition-colors">
+                  고객센터
+                </Link>
               </li>
               <li>
-                <SafeLink href="/help/returns" className="text-gray-400 hover:text-white transition-colors">
+                <Link href="/help/returns" className="hover:text-white transition-colors">
                   반품/교환
-                </SafeLink>
+                </Link>
               </li>
               <li>
-                <SafeLink href="/tracking" className="text-gray-400 hover:text-white transition-colors">
-                  배송조회
-                </SafeLink>
+                <Link href="/tracking" className="hover:text-white transition-colors">
+                  배송 조회
+                </Link>
+              </li>
+              <li>
+                <Link href="/dispute-center" className="hover:text-white transition-colors">
+                  분쟁 해결
+                </Link>
               </li>
             </ul>
           </div>
 
-          {/* 뉴스레터 */}
-          <div>
-            <h3 className="text-lg font-semibold mb-4">뉴스레터</h3>
-            <p className="text-gray-400 mb-4">최신 경매 정보와 특가 소식을 받아보세요</p>
+          {/* Newsletter */}
+          <div className="space-y-4">
+            <h3 className="font-semibold text-white">뉴스레터</h3>
+            <p className="text-sm text-gray-400">최신 경매 정보와 특별 혜택을 받아보세요.</p>
             <div className="flex space-x-2">
               <Input
                 type="email"
                 placeholder="이메일 주소"
                 className="bg-gray-800 border-gray-700 text-white placeholder-gray-400"
               />
-              <Button>구독</Button>
+              <Button size="sm" className="bg-blue-600 hover:bg-blue-700">
+                구독
+              </Button>
+            </div>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-center space-x-2">
+                <Mail className="h-4 w-4" />
+                <span>support@marketai.com</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <Phone className="h-4 w-4" />
+                <span>1588-1234</span>
+              </div>
+              <div className="flex items-center space-x-2">
+                <MapPin className="h-4 w-4" />
+                <span>서울시 강남구 테헤란로 123</span>
+              </div>
             </div>
           </div>
         </div>
 
-        {/* 연락처 정보 */}
-        <div className="border-t border-gray-800 mt-8 pt-8">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm text-gray-400">
-            <div className="flex items-center space-x-2">
-              <Mail className="w-4 h-4" />
-              <span>support@marketai.co.kr</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Phone className="w-4 h-4" />
-              <span>1588-1234</span>
-            </div>
-            <div className="flex items-center space-x-2">
-              <MapPin className="w-4 h-4" />
-              <span>서울시 강남구 테헤란로 123</span>
-            </div>
-          </div>
-        </div>
+        <Separator className="my-8 bg-gray-700" />
 
-        {/* 하단 링크 */}
-        <div className="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-          <div className="text-sm text-gray-400 mb-4 md:mb-0">© 2024 MarketAI. All rights reserved.</div>
-          <div className="flex space-x-6 text-sm">
-            <SafeLink href="/terms" className="text-gray-400 hover:text-white transition-colors">
+        {/* Bottom Footer */}
+        <div className="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+          <div className="flex flex-wrap gap-4 text-sm">
+            <Link href="/terms" className="hover:text-white transition-colors">
               이용약관
-            </SafeLink>
-            <SafeLink href="/privacy" className="text-gray-400 hover:text-white transition-colors">
+            </Link>
+            <Link href="/privacy" className="hover:text-white transition-colors">
               개인정보처리방침
-            </SafeLink>
-            <SafeLink href="/notices" className="text-gray-400 hover:text-white transition-colors">
+            </Link>
+            <Link href="/notices" className="hover:text-white transition-colors">
               공지사항
-            </SafeLink>
+            </Link>
+            <Link href="/admin" className="hover:text-white transition-colors">
+              관리자
+            </Link>
           </div>
+          <div className="text-sm text-gray-400">© 2024 MarketAI. All rights reserved.</div>
         </div>
       </div>
     </footer>

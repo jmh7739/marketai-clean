@@ -2,9 +2,12 @@
 const nextConfig = {
   reactStrictMode: true,
   swcMinify: true,
+  output: "export",
+  trailingSlash: true,
   // appDir은 Next.js 14+에서 기본값이므로 제거
   experimental: {
     // appDir: true, // 제거됨 - Next.js 14+에서 기본값
+    esmExternals: "loose",
   },
   // HTTPS 강제 적용
   async headers() {
@@ -72,7 +75,7 @@ const nextConfig = {
         hostname: "**",
       },
     ],
-    unoptimized: false,
+    unoptimized: true,
   },
   eslint: {
     ignoreDuringBuilds: true,

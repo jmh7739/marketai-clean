@@ -1,5 +1,5 @@
 import { initializeApp, getApps } from "firebase/app"
-import { getAuth, connectAuthEmulator } from "firebase/auth"
+import { getAuth, connectAuthEmulator, type Auth } from "firebase/auth"
 import { getFirestore, connectFirestoreEmulator } from "firebase/firestore"
 
 const firebaseConfig = {
@@ -18,18 +18,34 @@ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0
 export const auth = getAuth(app)
 export const db = getFirestore(app)
 
+// Client-side auth getter
+export const getClientAuth = (): Auth => {
+  if (typeof window === "undefined") {
+    throw new Error("getClientAuth can only be called on the client side")
+  }
+  return auth
+}
+
 // Connect to emulators in development
 if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
   try {
-    // Only connect if not already connected
-    if (!auth.config.emulator) {
+    // Check if auth emulator is already connected
+    const authConfig = (auth as any).config
+    if (!authConfig?.emulator) {
       connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true })
     }
-    if (!(db as any)._delegate._databaseId.projectId.includes("localhost")) {
+  } catch (error) {
+    console.log("Auth emulator already connected or not available")
+  }
+
+  try {
+    // Check if Firestore emulator is already connected
+    const firestoreSettings = (db as any)._delegate?._databaseId
+    if (!firestoreSettings?.projectId?.includes("demo-")) {
       connectFirestoreEmulator(db, "localhost", 8080)
     }
   } catch (error) {
-    console.log("Emulators already connected or not available")
+    console.log("Firestore emulator already connected or not available")
   }
 }
 

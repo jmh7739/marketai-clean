@@ -2,11 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react"
 import { getClientAuth } from "@/lib/firebase"
-import type {
-  ConfirmationResult,
-  RecaptchaVerifier,
-  signInWithPhoneNumber as SignInWithPhoneNumberFn,
-} from "firebase/auth"
+import type { ConfirmationResult, RecaptchaVerifier } from "firebase/auth"
 
 /* ───────────────────── utils ───────────────────── */
 const toE164 = (raw: string): string => {
@@ -62,7 +58,7 @@ export function usePhoneAuth() {
   /* helper to lazily create invisible recaptcha */
   const getRecaptcha = async (): Promise<RecaptchaVerifier> => {
     const auth = getClientAuth()
-    const { RecaptchaVerifier } = (await import("firebase/auth")) as typeof import("firebase/auth")
+    const { RecaptchaVerifier } = await import("firebase/auth")
     if (!document.getElementById("recaptcha-container")) {
       const el = document.createElement("div")
       el.id = "recaptcha-container"
@@ -90,9 +86,7 @@ export function usePhoneAuth() {
 
         const auth = getClientAuth()
         const verifier = await getRecaptcha()
-        const { signInWithPhoneNumber } = (await import("firebase/auth")) as {
-          signInWithPhoneNumber: SignInWithPhoneNumberFn
-        }
+        const { signInWithPhoneNumber } = await import("firebase/auth")
 
         const confirmation = await signInWithPhoneNumber(auth, toE164(phone), verifier)
         setConfirmResult(confirmation)
@@ -100,13 +94,14 @@ export function usePhoneAuth() {
         startCooldown(60)
         return { success: true }
       } catch (e: any) {
-        setError(e?.message ?? "인증번호 발송 중 오류가 발생했습니다.")
-        return { success: false, message: error }
+        const errorMessage = e?.message ?? "인증번호 발송 중 오류가 발생했습니다."
+        setError(errorMessage)
+        return { success: false, message: errorMessage }
       } finally {
         setLoading(false)
       }
     },
-    [cooldown, error],
+    [cooldown],
   )
 
   const verifyCode = useCallback(async () => {

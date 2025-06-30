@@ -1,138 +1,78 @@
 "use client"
 
-import type React from "react"
-
-import { useState, useEffect } from "react"
-import { Search, TrendingUp, Users, Clock, Zap } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { getStats } from "@/lib/utils"
+import { Search, Gavel, TrendingUp, Shield } from "lucide-react"
 import SafeLink from "@/components/SafeLink"
 
-export default function Hero() {
-  const [stats, setStats] = useState({
-    activeAuctions: 0,
-    totalUsers: 0,
-    totalBids: 0,
-    totalTransactions: 0,
-  })
-  const [searchQuery, setSearchQuery] = useState("")
-
-  useEffect(() => {
-    const updateStats = () => {
-      const currentStats = getStats()
-      setStats(currentStats)
-    }
-
-    updateStats()
-    const interval = setInterval(updateStats, 30000) // 30초마다 업데이트
-
-    return () => clearInterval(interval)
-  }, [])
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchQuery.trim()) {
-      window.location.href = `/search?q=${encodeURIComponent(searchQuery.trim())}`
-    }
-  }
-
+export function Hero() {
   return (
-    <section className="bg-gradient-to-br from-blue-50 via-white to-purple-50 py-16">
+    <section className="bg-gradient-to-br from-blue-50 to-indigo-100 py-20">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12">
+        <div className="text-center">
           <h1 className="text-4xl md:text-6xl font-bold text-gray-900 mb-6">
-            AI가 만드는
-            <br />
-            <span className="text-blue-600">스마트 경매</span>
+            AI가 만드는 <br />
+            <span className="text-blue-600">스마트한 경매</span>
           </h1>
           <p className="text-xl text-gray-600 mb-8 max-w-3xl mx-auto">
-            인공지능이 분석하는 실시간 가격 예측과 자동 입찰 시스템으로
-            <br />더 똑똑하고 안전한 온라인 경매를 경험하세요
+            인공지능 기술로 더 안전하고 투명한 온라인 경매를 경험하세요. 실시간 가격 분석과 사기 방지 시스템으로 신뢰할
+            수 있는 거래를 보장합니다.
           </p>
 
           {/* 검색바 */}
-          <form onSubmit={handleSearch} className="max-w-2xl mx-auto mb-12">
-            <div className="relative">
-              <Input
-                type="text"
-                placeholder="원하는 상품을 검색해보세요..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-6 pr-32 py-4 text-lg border-2 border-gray-200 rounded-full focus:border-blue-500 focus:ring-0"
-              />
-              <Button
-                type="submit"
-                size="lg"
-                className="absolute right-2 top-1/2 transform -translate-y-1/2 rounded-full px-8"
-              >
-                <Search className="w-5 h-5 mr-2" />
+          <div className="max-w-2xl mx-auto mb-12">
+            <div className="flex gap-2">
+              <div className="flex-1 relative">
+                <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
+                <Input type="search" placeholder="원하는 상품을 검색해보세요..." className="pl-10 py-3 text-lg" />
+              </div>
+              <Button size="lg" className="px-8">
                 검색
               </Button>
             </div>
-          </form>
+          </div>
 
           {/* CTA 버튼들 */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center mb-16">
-            <Button size="lg" className="px-8 py-3 text-lg" asChild>
+            <Button size="lg" className="px-8 py-3" asChild>
               <SafeLink href="/live-auctions">
-                <TrendingUp className="w-5 h-5 mr-2" />
-                실시간 경매 보기
+                <Gavel className="w-5 h-5 mr-2" />
+                실시간 경매 참여
               </SafeLink>
             </Button>
-            <Button size="lg" variant="outline" className="px-8 py-3 text-lg bg-transparent" asChild>
-              <SafeLink href="/sell">
-                <Zap className="w-5 h-5 mr-2" />
-                판매 시작하기
-              </SafeLink>
+            <Button size="lg" variant="outline" className="px-8 py-3 bg-transparent" asChild>
+              <SafeLink href="/sell">판매하기</SafeLink>
             </Button>
           </div>
-        </div>
 
-        {/* 실시간 통계 */}
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-          <Card className="text-center">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="w-6 h-6 text-blue-600" />
+          {/* 특징 */}
+          <div className="grid md:grid-cols-3 gap-8">
+            <div className="text-center">
+              <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <TrendingUp className="w-8 h-8 text-blue-600" />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{stats.activeAuctions}</div>
-              <div className="text-sm text-gray-600">진행중인 경매</div>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Users className="w-6 h-6 text-green-600" />
+              <h3 className="text-xl font-semibold mb-2">AI 가격 분석</h3>
+              <p className="text-gray-600">실시간 시장 데이터를 분석하여 적정 가격을 제안합니다</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Shield className="w-8 h-8 text-green-600" />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{stats.totalUsers}</div>
-              <div className="text-sm text-gray-600">전체 회원수</div>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-6 h-6 text-orange-600" />
+              <h3 className="text-xl font-semibold mb-2">사기 방지 시스템</h3>
+              <p className="text-gray-600">AI 기반 사기 탐지로 안전한 거래 환경을 제공합니다</p>
+            </div>
+            <div className="text-center">
+              <div className="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                <Gavel className="w-8 h-8 text-purple-600" />
               </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{stats.totalBids}</div>
-              <div className="text-sm text-gray-600">총 입찰 수</div>
-            </CardContent>
-          </Card>
-
-          <Card className="text-center">
-            <CardContent className="p-6">
-              <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <Zap className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="text-3xl font-bold text-gray-900 mb-2">{stats.totalTransactions}</div>
-              <div className="text-sm text-gray-600">완료된 거래</div>
-            </CardContent>
-          </Card>
+              <h3 className="text-xl font-semibold mb-2">실시간 경매</h3>
+              <p className="text-gray-600">실시간으로 진행되는 투명하고 공정한 경매 시스템</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
   )
 }
+
+export default Hero

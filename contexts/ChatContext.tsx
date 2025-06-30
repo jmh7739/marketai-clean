@@ -27,6 +27,7 @@ interface ChatContextType {
   sendMessage: (roomId: string, message: string) => void
   joinRoom: (roomId: string) => void
   leaveRoom: () => void
+  createRoom: (productId: string, sellerId: string, productTitle: string, productImage: string) => Promise<ChatRoom>
   loading: boolean
 }
 
@@ -103,6 +104,23 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     setMessages([])
   }
 
+  const createRoom = async (
+    productId: string,
+    sellerId: string,
+    productTitle: string,
+    productImage: string,
+  ): Promise<ChatRoom> => {
+    const newRoom: ChatRoom = {
+      id: `room_${Date.now()}`,
+      name: `${productTitle} 문의`,
+      participants: ["current_user", sellerId],
+      unreadCount: 0,
+    }
+
+    setRooms((prev) => [...prev, newRoom])
+    return newRoom
+  }
+
   const value: ChatContextType = {
     rooms,
     currentRoom,
@@ -110,6 +128,7 @@ export const ChatProvider: React.FC<ChatProviderProps> = ({ children }) => {
     sendMessage,
     joinRoom,
     leaveRoom,
+    createRoom,
     loading,
   }
 
