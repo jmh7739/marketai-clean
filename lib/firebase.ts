@@ -1,41 +1,40 @@
-// lib/firebase.ts ─ Firebase App & 안전한 Auth 싱글턴
-import { initializeApp, getApps, type FirebaseApp } from "firebase/app"
+import { initializeApp, getApps } from "firebase/app"
+import { getAuth, connectAuthEmulator } from "firebase/auth"
+import { getFirestore, connectFirestoreEmulator } from "firebase/firestore"
 
-/* ───────────── Firebase Config ───────────── */
 const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  apiKey: "demo-api-key",
+  authDomain: "demo-project.firebaseapp.com",
+  projectId: "demo-project",
+  storageBucket: "demo-project.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "demo-app-id",
 }
 
-/* ───────────── 앱 싱글턴 ───────────── */
-export const firebaseApp: FirebaseApp = getApps().length > 0 ? getApps()[0]! : initializeApp(firebaseConfig)
+// Initialize Firebase only if it hasn't been initialized
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0]
 
-/* ───────────── Auth 싱글턴 (클라이언트 전용) ───────────── */
-let _auth: import("firebase/auth").Auth | null = null
-let _loading = false // 동시 호출 대비
+// Initialize Auth
+export const auth = getAuth(app)
 
-export async function getClientAuth() {
-  if (_auth) return _auth
-  if (_loading)
-    // 다른 호출이 생성 완료되길 기다림
-    return new Promise<import("firebase/auth").Auth>((res) => {
-      const iv = setInterval(() => {
-        if (_auth) {
-          clearInterval(iv)
-          res(_auth!)
-        }
-      }, 10)
-    })
+// Initialize Firestore
+export const db = getFirestore(app)
 
-  if (typeof window === "undefined") throw new Error("getClientAuth() must run in the browser")
+// Connect to emulators in development (only in browser)
+if (typeof window !== "undefined" && process.env.NODE_ENV === "development") {
+  try {
+    connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true })
+    console.log("Connected to Firebase Auth emulator")
+  } catch (error) {
+    console.log("Auth emulator connection failed:", error)
+  }
 
-  _loading = true
-  const { getAuth } = await import("firebase/auth")
-  _auth = getAuth(firebaseApp)
-  _loading = false
-  return _auth
+  try {
+    connectFirestoreEmulator(db, "localhost", 8080)
+    console.log("Connected to Firestore emulator")
+  } catch (error) {
+    console.log("Firestore emulator connection failed:", error)
+  }
 }
+
+export default app

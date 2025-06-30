@@ -1,86 +1,99 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState } from "react"
-import type { AdminUser } from "@/types/admin-auth"
+import { createContext, useContext, useState, useEffect, type ReactNode } from "react"
+
+interface AdminUser {
+  id: string
+  email: string
+  name: string
+  role: "admin" | "super_admin"
+}
 
 interface AdminAuthContextType {
-  admin: AdminUser | null
-  isAuthenticated: boolean
-  isLoading: boolean
-  login: (email: string, password: string) => Promise<{ success: boolean; message: string }>
+  user: AdminUser | null
+  login: (email: string, password: string) => Promise<boolean>
   logout: () => void
+  loading: boolean
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefined)
 
-export function AdminAuthProvider({ children }: { children: React.ReactNode }) {
-  const [admin, setAdmin] = useState<AdminUser | null>(null)
-  const [isLoading, setIsLoading] = useState(false)
-
-  const login = async (email: string, password: string) => {
-    setIsLoading(true)
-
-    try {
-      // 테스트용 관리자 계정
-      if (email === "admin@marketai.com" && password === "admin123!") {
-        const adminUser: AdminUser = {
-          id: "admin-1",
-          email: "admin@marketai.com",
-          name: "관리자",
-          role: "super_admin",
-          permissions: [
-            { resource: "users", actions: ["read", "write", "delete"] },
-            { resource: "products", actions: ["read", "write", "delete", "approve"] },
-            { resource: "auctions", actions: ["read", "write", "delete", "approve"] },
-            { resource: "payments", actions: ["read", "write"] },
-            { resource: "reports", actions: ["read"] },
-            { resource: "settings", actions: ["read", "write"] },
-          ],
-          createdAt: new Date(),
-          lastLogin: new Date(),
-          isActive: true,
-        }
-
-        setAdmin(adminUser)
-        localStorage.setItem("admin", JSON.stringify(adminUser))
-        return { success: true, message: "로그인 성공" }
-      }
-
-      return { success: false, message: "잘못된 이메일 또는 비밀번호입니다." }
-    } catch (error) {
-      return { success: false, message: "로그인 중 오류가 발생했습니다." }
-    } finally {
-      setIsLoading(false)
-    }
-  }
-
-  const logout = () => {
-    setAdmin(null)
-    localStorage.removeItem("admin")
-  }
-
-  const isAuthenticated = admin !== null
-
-  return (
-    <AdminAuthContext.Provider
-      value={{
-        admin,
-        isAuthenticated,
-        isLoading,
-        login,
-        logout,
-      }}
-    >
-      {children}
-    </AdminAuthContext.Provider>
-  )
-}
-
-export function useAdminAuth() {
+export const useAdminAuth = () => {
   const context = useContext(AdminAuthContext)
   if (context === undefined) {
     throw new Error("useAdminAuth must be used within an AdminAuthProvider")
   }
   return context
+}
+
+interface AdminAuthProviderProps {
+  children: ReactNode
+}
+
+export const AdminAuthProvider: React.FC<AdminAuthProviderProps> = ({ children }) => {
+  const [user, setUser] = useState<AdminUser | null>(null)
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    // 로컬 스토리지에서 관리자 세션 확인
+    if (typeof window !== "undefined") {
+      const savedUser = localStorage.getItem("admin_user")
+      if (savedUser) {
+        try {
+          setUser(JSON.parse(savedUser))
+        } catch (error) {
+          console.error("Failed to parse saved admin user:", error)
+          localStorage.removeItem("admin_user")
+        }
+      }
+    }
+    setLoading(false)
+  }, [])
+
+  const login = async (email: string, password: string): Promise<boolean> => {
+    setLoading(true)
+
+    try {
+      // 실제 구현에서는 서버 API 호출
+      // 여기서는 데모용 하드코딩
+      if (email === "admin@marketai.com" && password === "admin123") {
+        const adminUser: AdminUser = {
+          id: "admin_1",
+          email: "admin@marketai.com",
+          name: "관리자",
+          role: "admin",
+        }
+
+        setUser(adminUser)
+        if (typeof window !== "undefined") {
+          localStorage.setItem("admin_user", JSON.stringify(adminUser))
+        }
+        return true
+      }
+
+      return false
+    } catch (error) {
+      console.error("Admin login error:", error)
+      return false
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const logout = () => {
+    setUser(null)
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("admin_user")
+    }
+  }
+
+  const value: AdminAuthContextType = {
+    user,
+    login,
+    logout,
+    loading,
+  }
+
+  return <AdminAuthContext.Provider value={value}>{children}</AdminAuthContext.Provider>
 }

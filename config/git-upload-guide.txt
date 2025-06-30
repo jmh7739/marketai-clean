@@ -11,7 +11,7 @@
 6. 생성된 저장소 URL 복사 (예: https://github.com/username/marketai-auction.git)
 
 ### 2. VS Code 터미널에서 Git 설정
-```bash
+\`\`\`bash
 # Git 사용자 정보 설정 (최초 1회만)
 git config --global user.name "당신의 이름"
 git config --global user.email "당신의 이메일@example.com"

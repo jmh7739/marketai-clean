@@ -6,7 +6,7 @@ interface LoadingSpinnerProps {
   className?: string
 }
 
-export default function LoadingSpinner({ size = "md", text, className = "" }: LoadingSpinnerProps) {
+const LoadingSpinnerComponent = ({ size = "md", text, className = "" }: LoadingSpinnerProps) => {
   const sizeClasses = {
     sm: "w-4 h-4",
     md: "w-6 h-6",
@@ -20,3 +20,7 @@ export default function LoadingSpinner({ size = "md", text, className = "" }: Lo
     </div>
   )
 }
+
+// 기본(default) + 이름(named) 내보내기
+export { LoadingSpinnerComponent as LoadingSpinner }
+export default LoadingSpinnerComponent
