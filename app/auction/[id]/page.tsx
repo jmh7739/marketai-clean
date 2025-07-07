@@ -1,252 +1,351 @@
-import { notFound } from "next/navigation"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Clock, MapPin, Eye, Users, Star } from "lucide-react"
+"use client"
 
-// Next.js 15에서 params는 Promise입니다
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
+import { Separator } from "@/components/ui/separator"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Clock, Gavel, Heart, Share2, AlertCircle } from "lucide-react"
+
 interface AuctionPageProps {
   params: Promise<{ id: string }>
 }
 
-// 더미 데이터
-const auctionData = {
-  id: "1",
-  title: "Vintage Rolex Submariner",
-  description:
-    "A beautiful vintage Rolex Submariner in excellent condition. This watch has been well-maintained and comes with original box and papers.",
-  currentBid: 15000,
-  startingBid: 10000,
-  buyNowPrice: 20000,
-  endDate: "2024-01-15T18:00:00Z",
+interface Auction {
+  id: string
+  title: string
+  description: string
+  currentBid: number
+  startingBid: number
+  endTime: string
+  status: "active" | "ended" | "upcoming"
+  images: string[]
   seller: {
-    name: "John Smith",
-    rating: 4.8,
-    avatar: "/placeholder.svg?height=40&width=40&text=JS",
-  },
-  category: "Watches",
-  condition: "Excellent",
-  images: [
-    "/placeholder.svg?height=400&width=400&text=Watch+1",
-    "/placeholder.svg?height=400&width=400&text=Watch+2",
-    "/placeholder.svg?height=400&width=400&text=Watch+3",
-  ],
-  bidCount: 23,
-  watchers: 45,
-  location: "New York, NY",
-  shippingCost: 25,
-  views: 234,
+    id: string
+    name: string
+    avatar: string
+    rating: number
+  }
+  bids: Bid[]
+  category: string
+  condition: string
 }
 
-const recentBids = [
-  { bidder: "User123", amount: 15000, time: "2 minutes ago" },
-  { bidder: "WatchLover", amount: 14500, time: "5 minutes ago" },
-  { bidder: "Collector99", amount: 14000, time: "8 minutes ago" },
-  { bidder: "TimeKeeper", amount: 13500, time: "12 minutes ago" },
-  { bidder: "VintageSeeker", amount: 13000, time: "15 minutes ago" },
-]
+interface Bid {
+  id: string
+  amount: number
+  bidder: {
+    id: string
+    name: string
+    avatar: string
+  }
+  timestamp: string
+}
 
-export default async function AuctionPage({ params }: AuctionPageProps) {
-  // Next.js 15에서 params를 await해야 합니다
-  const { id } = await params
+export default function AuctionPage({ params }: AuctionPageProps) {
+  const router = useRouter()
+  const [auction, setAuction] = useState<Auction | null>(null)
+  const [bidAmount, setBidAmount] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [timeLeft, setTimeLeft] = useState("")
 
-  // 실제로는 데이터베이스에서 경매 정보를 가져와야 합니다
-  if (!auctionData) {
-    notFound()
+  useEffect(() => {
+    const loadAuction = async () => {
+      try {
+        const { id } = await params
+        // Mock data - replace with actual API call
+        const mockAuction: Auction = {
+          id,
+          title: "빈티지 카메라 - Canon AE-1",
+          description:
+            "1970년대 제작된 클래식 필름 카메라입니다. 완전 작동 상태이며, 렌즈와 케이스가 포함되어 있습니다.",
+          currentBid: 150000,
+          startingBid: 50000,
+          endTime: "2024-01-20T15:00:00Z",
+          status: "active",
+          images: [
+            "/placeholder.svg?height=400&width=600",
+            "/placeholder.svg?height=400&width=600",
+            "/placeholder.svg?height=400&width=600",
+          ],
+          seller: {
+            id: "seller1",
+            name: "김수집가",
+            avatar: "/placeholder.svg?height=40&width=40",
+            rating: 4.8,
+          },
+          bids: [
+            {
+              id: "1",
+              amount: 150000,
+              bidder: {
+                id: "bidder1",
+                name: "박구매자",
+                avatar: "/placeholder.svg?height=32&width=32",
+              },
+              timestamp: "2024-01-15T14:30:00Z",
+            },
+            {
+              id: "2",
+              amount: 120000,
+              bidder: {
+                id: "bidder2",
+                name: "이수집가",
+                avatar: "/placeholder.svg?height=32&width=32",
+              },
+              timestamp: "2024-01-15T13:15:00Z",
+            },
+          ],
+          category: "카메라",
+          condition: "중고 - 우수",
+        }
+        setAuction(mockAuction)
+      } catch (error) {
+        console.error("Failed to load auction:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadAuction()
+  }, [params])
+
+  useEffect(() => {
+    if (!auction) return
+
+    const updateTimeLeft = () => {
+      const now = new Date().getTime()
+      const endTime = new Date(auction.endTime).getTime()
+      const difference = endTime - now
+
+      if (difference > 0) {
+        const days = Math.floor(difference / (1000 * 60 * 60 * 24))
+        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60))
+        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60))
+        const seconds = Math.floor((difference % (1000 * 60)) / 1000)
+
+        setTimeLeft(`${days}일 ${hours}시간 ${minutes}분 ${seconds}초`)
+      } else {
+        setTimeLeft("경매 종료")
+      }
+    }
+
+    updateTimeLeft()
+    const timer = setInterval(updateTimeLeft, 1000)
+
+    return () => clearInterval(timer)
+  }, [auction])
+
+  const handleBid = async () => {
+    if (!auction || !bidAmount) return
+
+    const amount = Number.parseInt(bidAmount)
+    if (amount <= auction.currentBid) {
+      alert("현재 입찰가보다 높은 금액을 입력해주세요.")
+      return
+    }
+
+    try {
+      // Mock API call - replace with actual implementation
+      const newBid: Bid = {
+        id: Date.now().toString(),
+        amount,
+        bidder: {
+          id: "current-user",
+          name: "현재 사용자",
+          avatar: "/placeholder.svg?height=32&width=32",
+        },
+        timestamp: new Date().toISOString(),
+      }
+
+      setAuction((prev) =>
+        prev
+          ? {
+              ...prev,
+              currentBid: amount,
+              bids: [newBid, ...prev.bids],
+            }
+          : null,
+      )
+
+      setBidAmount("")
+      alert("입찰이 완료되었습니다!")
+    } catch (error) {
+      console.error("Failed to place bid:", error)
+      alert("입찰에 실패했습니다. 다시 시도해주세요.")
+    }
   }
 
-  const timeLeft = new Date(auctionData.endDate).getTime() - new Date().getTime()
-  const hoursLeft = Math.floor(timeLeft / (1000 * 60 * 60))
-  const minutesLeft = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60))
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="h-96 bg-gray-200 rounded"></div>
+            <div className="space-y-4">
+              <div className="h-6 bg-gray-200 rounded w-3/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+              <div className="h-20 bg-gray-200 rounded"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!auction) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card>
+          <CardContent className="text-center py-8">
+            <AlertCircle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">경매를 찾을 수 없습니다</h2>
+            <p className="text-gray-600 mb-4">요청하신 경매가 존재하지 않거나 삭제되었습니다.</p>
+            <Button onClick={() => router.back()}>돌아가기</Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
 
   return (
     <div className="container mx-auto px-4 py-8">
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* 메인 이미지 및 정보 */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* 이미지 갤러리 */}
-          <Card>
-            <CardContent className="p-0">
-              <div className="aspect-square bg-gray-100 rounded-t-lg overflow-hidden">
+      <Button variant="outline" onClick={() => router.back()} className="mb-6">
+        ← 돌아가기
+      </Button>
+
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* 이미지 섹션 */}
+        <div className="space-y-4">
+          <div className="aspect-square rounded-lg overflow-hidden bg-gray-100">
+            <img
+              src={auction.images[0] || "/placeholder.svg"}
+              alt={auction.title}
+              className="w-full h-full object-cover"
+            />
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {auction.images.slice(1).map((image, index) => (
+              <div key={index} className="aspect-square rounded-lg overflow-hidden bg-gray-100">
                 <img
-                  src={auctionData.images[0] || "/placeholder.svg"}
-                  alt={auctionData.title}
-                  className="w-full h-full object-cover"
+                  src={image || "/placeholder.svg"}
+                  alt={`${auction.title} ${index + 2}`}
+                  className="w-full h-full object-cover cursor-pointer hover:opacity-80"
                 />
               </div>
-              <div className="flex gap-2 p-4">
-                {auctionData.images.slice(1).map((image, index) => (
-                  <div key={index} className="w-20 h-20 bg-gray-100 rounded overflow-hidden">
-                    <img
-                      src={image || "/placeholder.svg"}
-                      alt={`${auctionData.title} ${index + 2}`}
-                      className="w-full h-full object-cover cursor-pointer hover:opacity-80"
-                    />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 상품 정보 */}
-          <Card>
-            <CardHeader>
-              <div className="flex justify-between items-start">
-                <div>
-                  <CardTitle className="text-2xl">{auctionData.title}</CardTitle>
-                  <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                    <span className="flex items-center gap-1">
-                      <Eye className="w-4 h-4" />
-                      {auctionData.views} views
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {auctionData.watchers} watching
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <MapPin className="w-4 h-4" />
-                      {auctionData.location}
-                    </span>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                  <Badge variant="secondary">{auctionData.category}</Badge>
-                  <Badge variant="outline">{auctionData.condition}</Badge>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-700 leading-relaxed">{auctionData.description}</p>
-
-              <div className="mt-6 grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Starting Bid:</span>
-                  <span className="ml-2">${auctionData.startingBid.toLocaleString()}</span>
-                </div>
-                <div>
-                  <span className="font-medium">Shipping:</span>
-                  <span className="ml-2">${auctionData.shippingCost}</span>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 판매자 정보 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Seller Information</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <Avatar className="w-12 h-12">
-                  <AvatarImage src={auctionData.seller.avatar || "/placeholder.svg"} />
-                  <AvatarFallback>
-                    {auctionData.seller.name
-                      .split(" ")
-                      .map((n) => n[0])
-                      .join("")}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-medium">{auctionData.seller.name}</h3>
-                  <div className="flex items-center gap-1 text-sm text-gray-600">
-                    <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                    <span>{auctionData.seller.rating}</span>
-                    <span>rating</span>
-                  </div>
-                </div>
-                <Button variant="outline" className="ml-auto bg-transparent">
-                  View Profile
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+            ))}
+          </div>
         </div>
 
-        {/* 입찰 섹션 */}
+        {/* 정보 섹션 */}
         <div className="space-y-6">
-          {/* 현재 입찰 정보 */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <Badge variant="outline">{auction.category}</Badge>
+              <div className="flex gap-2">
+                <Button variant="outline" size="sm">
+                  <Heart className="h-4 w-4" />
+                </Button>
+                <Button variant="outline" size="sm">
+                  <Share2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">{auction.title}</h1>
+            <p className="text-gray-600">{auction.description}</p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Avatar>
+              <AvatarImage src={auction.seller.avatar || "/placeholder.svg"} />
+              <AvatarFallback>{auction.seller.name[0]}</AvatarFallback>
+            </Avatar>
+            <div>
+              <p className="font-medium">{auction.seller.name}</p>
+              <p className="text-sm text-gray-500">평점: {auction.seller.rating}/5.0</p>
+            </div>
+          </div>
+
           <Card>
             <CardHeader>
-              <CardTitle>Current Bid</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <Gavel className="h-5 w-5" />
+                경매 정보
+              </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-green-600">${auctionData.currentBid.toLocaleString()}</div>
-                <div className="text-sm text-gray-600">{auctionData.bidCount} bids</div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">현재 입찰가</span>
+                <span className="text-2xl font-bold text-blue-600">{auction.currentBid.toLocaleString()}원</span>
               </div>
-
-              <div className="flex items-center justify-center gap-2 text-sm">
-                <Clock className="w-4 h-4" />
-                <span>
-                  {hoursLeft > 0 ? `${hoursLeft}h ` : ""}
-                  {minutesLeft}m left
-                </span>
+              <div className="flex justify-between">
+                <span className="text-gray-600">시작가</span>
+                <span>{auction.startingBid.toLocaleString()}원</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-gray-600">상태</span>
+                <span>{auction.condition}</span>
+              </div>
+              <Separator />
+              <div className="flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Clock className="h-4 w-4 text-gray-500" />
+                  <span className="text-gray-600">남은 시간</span>
+                </div>
+                <span className="font-medium text-red-600">{timeLeft}</span>
+              </div>
+            </CardContent>
+          </Card>
 
-              <div className="space-y-3">
+          {auction.status === "active" && (
+            <Card>
+              <CardHeader>
+                <CardTitle>입찰하기</CardTitle>
+                <CardDescription>현재 최고가보다 높은 금액을 입력해주세요.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
                 <div className="flex gap-2">
                   <Input
                     type="number"
-                    placeholder={`Min: $${(auctionData.currentBid + 100).toLocaleString()}`}
-                    className="flex-1"
+                    placeholder="입찰 금액"
+                    value={bidAmount}
+                    onChange={(e) => setBidAmount(e.target.value)}
+                    min={auction.currentBid + 1000}
                   />
-                  <Button>Place Bid</Button>
-                </div>
-
-                {auctionData.buyNowPrice && (
-                  <Button className="w-full bg-transparent" variant="outline">
-                    Buy Now - ${auctionData.buyNowPrice.toLocaleString()}
+                  <Button onClick={handleBid} disabled={!bidAmount}>
+                    입찰
                   </Button>
-                )}
+                </div>
+                <p className="text-sm text-gray-500">최소 입찰 단위: 1,000원</p>
+              </CardContent>
+            </Card>
+          )}
 
-                <Button className="w-full" variant="ghost">
-                  Add to Watchlist
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 최근 입찰 내역 */}
           <Card>
             <CardHeader>
-              <CardTitle>Recent Bids</CardTitle>
+              <CardTitle>입찰 내역</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {recentBids.map((bid, index) => (
-                  <div key={index} className="flex justify-between items-center text-sm">
-                    <div>
-                      <div className="font-medium">{bid.bidder}</div>
-                      <div className="text-gray-600">{bid.time}</div>
+                {auction.bids.map((bid) => (
+                  <div key={bid.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={bid.bidder.avatar || "/placeholder.svg"} />
+                        <AvatarFallback>{bid.bidder.name[0]}</AvatarFallback>
+                      </Avatar>
+                      <div>
+                        <p className="font-medium text-sm">{bid.bidder.name}</p>
+                        <p className="text-xs text-gray-500">{new Date(bid.timestamp).toLocaleString("ko-KR")}</p>
+                      </div>
                     </div>
-                    <div className="font-bold">${bid.amount.toLocaleString()}</div>
+                    <span className="font-medium">{bid.amount.toLocaleString()}원</span>
                   </div>
                 ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 배송 정보 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Shipping & Returns</CardTitle>
-            </CardHeader>
-            <CardContent className="text-sm space-y-2">
-              <div className="flex justify-between">
-                <span>Shipping:</span>
-                <span>${auctionData.shippingCost}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Location:</span>
-                <span>{auctionData.location}</span>
-              </div>
-              <div className="text-gray-600 mt-3">
-                <p>• Fast and secure shipping</p>
-                <p>• 30-day return policy</p>
-                <p>• Buyer protection included</p>
               </div>
             </CardContent>
           </Card>

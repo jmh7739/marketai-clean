@@ -1,211 +1,287 @@
+"use client"
+
+import { useState, useEffect } from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Badge } from "@/components/ui/badge"
 import { Textarea } from "@/components/ui/textarea"
 import { Separator } from "@/components/ui/separator"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { CalendarDays, MessageSquare, FileText, AlertTriangle } from "lucide-react"
+import { MessageSquare, User, AlertTriangle } from "lucide-react"
 
-interface DisputeCenterPageProps {
+interface DisputePageProps {
   params: Promise<{ id: string }>
 }
 
-export default async function DisputeCenterPage({ params }: DisputeCenterPageProps) {
-  const { id } = await params
+interface Dispute {
+  id: string
+  title: string
+  description: string
+  status: "pending" | "in-progress" | "resolved" | "closed"
+  priority: "low" | "medium" | "high"
+  createdAt: string
+  updatedAt: string
+  userId: string
+  userName: string
+  messages: DisputeMessage[]
+}
 
-  // Mock dispute data - replace with actual data fetching
-  const dispute = {
-    id: id,
-    title: "상품 미배송 분쟁",
-    status: "pending",
-    createdAt: "2024-01-15",
-    description: "주문한 상품이 배송 예정일을 넘겨도 도착하지 않았습니다.",
-    buyer: {
-      name: "김구매자",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    seller: {
-      name: "박판매자",
-      avatar: "/placeholder.svg?height=40&width=40",
-    },
-    product: {
-      name: "아이폰 14 Pro",
-      price: 1200000,
-      image: "/placeholder.svg?height=100&width=100",
-    },
-    messages: [
-      {
-        id: 1,
-        sender: "buyer",
-        message: "상품을 주문한지 2주가 지났는데 아직 받지 못했습니다.",
-        timestamp: "2024-01-15 10:00",
-      },
-      {
-        id: 2,
-        sender: "seller",
-        message: "배송 지연으로 인해 죄송합니다. 확인해보겠습니다.",
-        timestamp: "2024-01-15 14:30",
-      },
-    ],
-  }
+interface DisputeMessage {
+  id: string
+  content: string
+  sender: "user" | "admin"
+  senderName: string
+  timestamp: string
+}
 
-  const getStatusBadge = (status: string) => {
-    switch (status) {
-      case "pending":
-        return (
-          <Badge variant="outline" className="bg-yellow-50 text-yellow-700 border-yellow-200">
-            대기중
-          </Badge>
-        )
-      case "resolved":
-        return (
-          <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
-            해결됨
-          </Badge>
-        )
-      case "rejected":
-        return (
-          <Badge variant="outline" className="bg-red-50 text-red-700 border-red-200">
-            거부됨
-          </Badge>
-        )
-      default:
-        return <Badge variant="outline">알 수 없음</Badge>
+export default function DisputePage({ params }: DisputePageProps) {
+  const router = useRouter()
+  const [dispute, setDispute] = useState<Dispute | null>(null)
+  const [newMessage, setNewMessage] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [sending, setSending] = useState(false)
+
+  useEffect(() => {
+    const loadDispute = async () => {
+      try {
+        const { id } = await params
+        // Mock data - replace with actual API call
+        const mockDispute: Dispute = {
+          id,
+          title: "결제 문제 신고",
+          description: "경매 낙찰 후 결제가 정상적으로 처리되지 않았습니다.",
+          status: "in-progress",
+          priority: "high",
+          createdAt: "2024-01-15T10:30:00Z",
+          updatedAt: "2024-01-15T14:20:00Z",
+          userId: "user123",
+          userName: "김철수",
+          messages: [
+            {
+              id: "1",
+              content: "경매 낙찰 후 결제가 정상적으로 처리되지 않았습니다. 도움이 필요합니다.",
+              sender: "user",
+              senderName: "김철수",
+              timestamp: "2024-01-15T10:30:00Z",
+            },
+            {
+              id: "2",
+              content: "안녕하세요. 문의사항을 확인했습니다. 결제 내역을 조사 중이니 잠시만 기다려주세요.",
+              sender: "admin",
+              senderName: "관리자",
+              timestamp: "2024-01-15T11:15:00Z",
+            },
+          ],
+        }
+        setDispute(mockDispute)
+      } catch (error) {
+        console.error("Failed to load dispute:", error)
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadDispute()
+  }, [params])
+
+  const handleSendMessage = async () => {
+    if (!newMessage.trim() || !dispute) return
+
+    setSending(true)
+    try {
+      // Mock API call - replace with actual implementation
+      const newMsg: DisputeMessage = {
+        id: Date.now().toString(),
+        content: newMessage,
+        sender: "admin",
+        senderName: "관리자",
+        timestamp: new Date().toISOString(),
+      }
+
+      setDispute((prev) =>
+        prev
+          ? {
+              ...prev,
+              messages: [...prev.messages, newMsg],
+              updatedAt: new Date().toISOString(),
+            }
+          : null,
+      )
+
+      setNewMessage("")
+    } catch (error) {
+      console.error("Failed to send message:", error)
+    } finally {
+      setSending(false)
     }
   }
 
-  return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
-      <div className="mb-6">
-        <h1 className="text-3xl font-bold mb-2">분쟁 상세</h1>
-        <p className="text-muted-foreground">분쟁 ID: {dispute.id}</p>
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "pending":
+        return "bg-yellow-100 text-yellow-800"
+      case "in-progress":
+        return "bg-blue-100 text-blue-800"
+      case "resolved":
+        return "bg-green-100 text-green-800"
+      case "closed":
+        return "bg-gray-100 text-gray-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  const getPriorityColor = (priority: string) => {
+    switch (priority) {
+      case "high":
+        return "bg-red-100 text-red-800"
+      case "medium":
+        return "bg-orange-100 text-orange-800"
+      case "low":
+        return "bg-green-100 text-green-800"
+      default:
+        return "bg-gray-100 text-gray-800"
+    }
+  }
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse">
+          <div className="h-8 bg-gray-200 rounded w-1/4 mb-4"></div>
+          <div className="h-64 bg-gray-200 rounded"></div>
+        </div>
       </div>
+    )
+  }
 
-      <div className="grid gap-6">
-        {/* 분쟁 개요 */}
+  if (!dispute) {
+    return (
+      <div className="container mx-auto px-4 py-8">
         <Card>
-          <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="flex items-center gap-2">
-                <AlertTriangle className="h-5 w-5 text-orange-500" />
-                {dispute.title}
-              </CardTitle>
-              {getStatusBadge(dispute.status)}
-            </div>
-            <CardDescription className="flex items-center gap-2">
-              <CalendarDays className="h-4 w-4" />
-              {dispute.createdAt}에 신고됨
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground mb-4">{dispute.description}</p>
-
-            {/* 관련 상품 정보 */}
-            <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-              <img
-                src={dispute.product.image || "/placeholder.svg"}
-                alt={dispute.product.name}
-                className="w-16 h-16 object-cover rounded-md"
-              />
-              <div>
-                <h4 className="font-medium">{dispute.product.name}</h4>
-                <p className="text-sm text-muted-foreground">{dispute.product.price.toLocaleString()}원</p>
-              </div>
-            </div>
+          <CardContent className="text-center py-8">
+            <AlertTriangle className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">분쟁을 찾을 수 없습니다</h2>
+            <p className="text-gray-600 mb-4">요청하신 분쟁이 존재하지 않거나 삭제되었습니다.</p>
+            <Button onClick={() => router.back()}>돌아가기</Button>
           </CardContent>
         </Card>
+      </div>
+    )
+  }
 
-        {/* 당사자 정보 */}
-        <div className="grid md:grid-cols-2 gap-4">
+  return (
+    <div className="container mx-auto px-4 py-8">
+      <div className="mb-6">
+        <Button variant="outline" onClick={() => router.back()} className="mb-4">
+          ← 돌아가기
+        </Button>
+
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">분쟁 상세</h1>
+          <div className="flex gap-2">
+            <Badge className={getStatusColor(dispute.status)}>
+              {dispute.status === "pending" && "대기중"}
+              {dispute.status === "in-progress" && "처리중"}
+              {dispute.status === "resolved" && "해결됨"}
+              {dispute.status === "closed" && "종료됨"}
+            </Badge>
+            <Badge className={getPriorityColor(dispute.priority)}>
+              {dispute.priority === "high" && "높음"}
+              {dispute.priority === "medium" && "보통"}
+              {dispute.priority === "low" && "낮음"}
+            </Badge>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* 분쟁 정보 */}
+        <div className="lg:col-span-1">
           <Card>
             <CardHeader>
-              <CardTitle className="text-lg">구매자</CardTitle>
+              <CardTitle className="flex items-center gap-2">
+                <User className="h-5 w-5" />
+                분쟁 정보
+              </CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={dispute.buyer.avatar || "/placeholder.svg"} />
-                  <AvatarFallback>{dispute.buyer.name[0]}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{dispute.buyer.name}</p>
-                  <p className="text-sm text-muted-foreground">신고자</p>
-                </div>
+            <CardContent className="space-y-4">
+              <div>
+                <label className="text-sm font-medium text-gray-500">제목</label>
+                <p className="text-sm text-gray-900">{dispute.title}</p>
               </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">판매자</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-3">
-                <Avatar>
-                  <AvatarImage src={dispute.seller.avatar || "/placeholder.svg"} />
-                  <AvatarFallback>{dispute.seller.name[0]}</AvatarFallback>
-                </Avatar>
-                <div>
-                  <p className="font-medium">{dispute.seller.name}</p>
-                  <p className="text-sm text-muted-foreground">피신고자</p>
-                </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">설명</label>
+                <p className="text-sm text-gray-900">{dispute.description}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">신고자</label>
+                <p className="text-sm text-gray-900">{dispute.userName}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">생성일</label>
+                <p className="text-sm text-gray-900">{new Date(dispute.createdAt).toLocaleString("ko-KR")}</p>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-gray-500">최종 업데이트</label>
+                <p className="text-sm text-gray-900">{new Date(dispute.updatedAt).toLocaleString("ko-KR")}</p>
               </div>
             </CardContent>
           </Card>
         </div>
 
-        {/* 대화 내역 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MessageSquare className="h-5 w-5" />
-              대화 내역
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {dispute.messages.map((message, index) => (
-              <div key={message.id}>
-                <div className={`flex gap-3 ${message.sender === "buyer" ? "justify-start" : "justify-end"}`}>
-                  <div
-                    className={`max-w-[70%] p-3 rounded-lg ${
-                      message.sender === "buyer" ? "bg-blue-50 text-blue-900" : "bg-gray-50 text-gray-900"
-                    }`}
-                  >
-                    <p className="text-sm font-medium mb-1">
-                      {message.sender === "buyer" ? dispute.buyer.name : dispute.seller.name}
-                    </p>
-                    <p className="text-sm">{message.message}</p>
-                    <p className="text-xs text-muted-foreground mt-1">{message.timestamp}</p>
+        {/* 메시지 */}
+        <div className="lg:col-span-2">
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <MessageSquare className="h-5 w-5" />
+                대화 내역
+              </CardTitle>
+              <CardDescription>신고자와의 대화를 확인하고 응답할 수 있습니다.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4 mb-6 max-h-96 overflow-y-auto">
+                {dispute.messages.map((message, index) => (
+                  <div key={message.id}>
+                    <div className={`flex ${message.sender === "admin" ? "justify-end" : "justify-start"}`}>
+                      <div
+                        className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          message.sender === "admin" ? "bg-blue-500 text-white" : "bg-gray-100 text-gray-900"
+                        }`}
+                      >
+                        <p className="text-sm">{message.content}</p>
+                        <div className="flex items-center justify-between mt-1">
+                          <span className={`text-xs ${message.sender === "admin" ? "text-blue-100" : "text-gray-500"}`}>
+                            {message.senderName}
+                          </span>
+                          <span className={`text-xs ${message.sender === "admin" ? "text-blue-100" : "text-gray-500"}`}>
+                            {new Date(message.timestamp).toLocaleString("ko-KR")}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                    {index < dispute.messages.length - 1 && <Separator className="my-4" />}
                   </div>
-                </div>
-                {index < dispute.messages.length - 1 && <Separator className="my-4" />}
+                ))}
               </div>
-            ))}
-          </CardContent>
-        </Card>
 
-        {/* 관리자 응답 */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
-              관리자 응답
-            </CardTitle>
-            <CardDescription>이 분쟁에 대한 관리자의 결정을 입력하세요.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <Textarea placeholder="분쟁 해결 방안을 입력하세요..." className="min-h-[120px]" />
-            <div className="flex gap-2">
-              <Button className="bg-green-600 hover:bg-green-700">구매자 승리</Button>
-              <Button variant="outline" className="border-orange-200 text-orange-700 hover:bg-orange-50 bg-transparent">
-                판매자 승리
-              </Button>
-              <Button variant="outline" className="border-red-200 text-red-700 hover:bg-red-50 bg-transparent">
-                분쟁 기각
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+              <div className="space-y-4">
+                <Textarea
+                  placeholder="메시지를 입력하세요..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  rows={3}
+                />
+                <div className="flex justify-end">
+                  <Button onClick={handleSendMessage} disabled={!newMessage.trim() || sending}>
+                    {sending ? "전송 중..." : "메시지 전송"}
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   )
