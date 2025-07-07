@@ -1,242 +1,149 @@
 "use client"
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Users, Package, DollarSign, TrendingUp, AlertTriangle, BarChart3 } from "lucide-react"
 import type { AdminStats, SalesData } from "@/types/admin"
-import {
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  PieChart as RechartsPieChart,
-  Cell,
-  Pie,
-} from "recharts"
+import { LineChart, Line } from "recharts"
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState<AdminStats>({
-    totalUsers: 15420,
-    totalProducts: 8934,
-    totalSales: 2847,
-    totalRevenue: 45670000,
-    monthlyGrowth: {
-      users: 12.5,
-      sales: 8.3,
-      revenue: 15.7,
-    },
+    totalUsers: 0,
+    totalAuctions: 0,
+    totalRevenue: 0,
+    activeUsers: 0,
+    pendingDisputes: 0,
+    completedTransactions: 0,
   })
 
-  const [salesData] = useState<SalesData[]>([
-    { date: "2024-01", sales: 245, revenue: 3200000 },
-    { date: "2024-02", sales: 289, revenue: 3800000 },
-    { date: "2024-03", sales: 334, revenue: 4200000 },
-    { date: "2024-04", sales: 378, revenue: 4800000 },
-    { date: "2024-05", sales: 423, revenue: 5400000 },
-    { date: "2024-06", sales: 467, revenue: 6100000 },
-  ])
+  const [salesData, setSalesData] = useState<SalesData[]>([])
 
-  const categoryData = [
-    { name: "전자제품", value: 35, color: "#3B82F6" },
-    { name: "패션", value: 25, color: "#EF4444" },
-    { name: "홈&리빙", value: 20, color: "#10B981" },
-    { name: "스포츠", value: 12, color: "#F59E0B" },
-    { name: "기타", value: 8, color: "#8B5CF6" },
-  ]
+  useEffect(() => {
+    // Mock data - replace with actual API calls
+    setStats({
+      totalUsers: 1234,
+      totalAuctions: 567,
+      totalRevenue: 89012,
+      activeUsers: 234,
+      pendingDisputes: 12,
+      completedTransactions: 456,
+    })
 
-  const recentActivities = [
-    { type: "user", message: "새로운 사용자 가입: 김철수님", time: "5분 전" },
-    { type: "sale", message: "iPhone 15 Pro 경매 낙찰: ₩1,200,000", time: "12분 전" },
-    { type: "report", message: "신고 접수: 부적절한 상품 설명", time: "23분 전" },
-    { type: "user", message: "새로운 사용자 가입: 이영희님", time: "34분 전" },
-    { type: "sale", message: "MacBook Air 경매 낙찰: ₩950,000", time: "45분 전" },
-  ]
+    setSalesData([
+      { date: "2024-01-01", revenue: 1200, transactions: 45, users: 23 },
+      { date: "2024-01-02", revenue: 1500, transactions: 52, users: 28 },
+      { date: "2024-01-03", revenue: 1800, transactions: 61, users: 35 },
+      { date: "2024-01-04", revenue: 1400, transactions: 48, users: 26 },
+      { date: "2024-01-05", revenue: 2100, transactions: 73, users: 42 },
+    ])
+  }, [])
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        {/* 헤더 */}
+    <div className="min-h-screen bg-gray-50 p-6">
+      <div className="max-w-7xl mx-auto">
         <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">관리자 대시보드</h1>
-          <p className="text-gray-600">MarketAI 플랫폼 운영 현황을 한눈에 확인하세요</p>
+          <h1 className="text-3xl font-bold text-gray-900">관리자 대시보드</h1>
+          <p className="text-gray-600 mt-2">마켓AI 플랫폼 관리 및 모니터링</p>
         </div>
 
-        {/* 통계 카드 */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">총 사용자</p>
-                  <p className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                    <span className="text-sm text-green-500">+{stats.monthlyGrowth.users}%</span>
-                  </div>
-                </div>
-                <Users className="w-8 h-8 text-blue-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">등록 상품</p>
-                  <p className="text-2xl font-bold">{stats.totalProducts.toLocaleString()}</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                    <span className="text-sm text-green-500">+{stats.monthlyGrowth.sales}%</span>
-                  </div>
-                </div>
-                <Package className="w-8 h-8 text-green-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">총 거래</p>
-                  <p className="text-2xl font-bold">{stats.totalSales.toLocaleString()}</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                    <span className="text-sm text-green-500">+{stats.monthlyGrowth.sales}%</span>
-                  </div>
-                </div>
-                <BarChart3 className="w-8 h-8 text-purple-500" />
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card>
-            <CardContent className="p-6">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">총 매출</p>
-                  <p className="text-2xl font-bold">₩{(stats.totalRevenue / 10000).toFixed(0)}만</p>
-                  <div className="flex items-center mt-2">
-                    <TrendingUp className="w-4 h-4 text-green-500 mr-1" />
-                    <span className="text-sm text-green-500">+{stats.monthlyGrowth.revenue}%</span>
-                  </div>
-                </div>
-                <DollarSign className="w-8 h-8 text-yellow-500" />
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-          {/* 매출 추이 차트 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>월별 매출 추이</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">총 사용자</CardTitle>
+              <Users className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <LineChart data={salesData}>
-                  <CartesianGrid strokeDasharray="3 3" />
-                  <XAxis dataKey="date" />
-                  <YAxis />
-                  <Tooltip formatter={(value: number) => [`₩${(value / 10000).toFixed(0)}만`, "매출"]} />
-                  <Line type="monotone" dataKey="revenue" stroke="#3B82F6" strokeWidth={2} />
-                </LineChart>
-              </ResponsiveContainer>
+              <div className="text-2xl font-bold">{stats.totalUsers.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">활성 사용자: {stats.activeUsers}명</p>
             </CardContent>
           </Card>
 
-          {/* 카테고리별 판매 비율 */}
           <Card>
-            <CardHeader>
-              <CardTitle>카테고리별 판매 비율</CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">총 경매</CardTitle>
+              <Package className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              <ResponsiveContainer width="100%" height={300}>
-                <RechartsPieChart>
-                  <Pie data={categoryData} cx="50%" cy="50%" outerRadius={80} dataKey="value">
-                    {categoryData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip formatter={(value: number) => [`${value}%`, "비율"]} />
-                </RechartsPieChart>
-              </ResponsiveContainer>
-              <div className="flex flex-wrap gap-2 mt-4">
-                {categoryData.map((item, index) => (
-                  <div key={index} className="flex items-center">
-                    <div className="w-3 h-3 rounded-full mr-2" style={{ backgroundColor: item.color }} />
-                    <span className="text-sm text-gray-600">
-                      {item.name} ({item.value}%)
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <div className="text-2xl font-bold">{stats.totalAuctions.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">완료된 거래: {stats.completedTransactions}건</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">총 수익</CardTitle>
+              <DollarSign className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">₩{stats.totalRevenue.toLocaleString()}</div>
+              <p className="text-xs text-muted-foreground">이번 달 수익</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">활성 사용자</CardTitle>
+              <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.activeUsers}</div>
+              <p className="text-xs text-muted-foreground">지난 24시간 기준</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">대기 중인 분쟁</CardTitle>
+              <AlertTriangle className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold text-red-600">{stats.pendingDisputes}</div>
+              <p className="text-xs text-muted-foreground">처리 필요</p>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">완료된 거래</CardTitle>
+              <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">{stats.completedTransactions}</div>
+              <p className="text-xs text-muted-foreground">이번 달 기준</p>
             </CardContent>
           </Card>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* 최근 활동 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>최근 활동</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {recentActivities.map((activity, index) => (
-                  <div key={index} className="flex items-start space-x-3 p-3 bg-gray-50 rounded-lg">
-                    <div
-                      className={`w-2 h-2 rounded-full mt-2 ${
-                        activity.type === "user"
-                          ? "bg-blue-500"
-                          : activity.type === "sale"
-                            ? "bg-green-500"
-                            : "bg-red-500"
-                      }`}
-                    />
-                    <div className="flex-1">
-                      <p className="text-sm text-gray-900">{activity.message}</p>
-                      <p className="text-xs text-gray-500">{activity.time}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 빠른 액션 */}
-          <Card>
-            <CardHeader>
-              <CardTitle>빠른 관리</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 gap-4">
-                <Button className="h-20 flex flex-col items-center justify-center">
-                  <Users className="w-6 h-6 mb-2" />
-                  <span>사용자 관리</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-                  <Package className="w-6 h-6 mb-2" />
-                  <span>상품 관리</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-                  <AlertTriangle className="w-6 h-6 mb-2" />
-                  <span>신고 처리</span>
-                </Button>
-                <Button variant="outline" className="h-20 flex flex-col items-center justify-center">
-                  <BarChart3 className="w-6 h-6 mb-2" />
-                  <span>통계 분석</span>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        {/* Quick Actions */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          <Button className="h-12">사용자 관리</Button>
+          <Button variant="outline" className="h-12 bg-transparent">
+            경매 관리
+          </Button>
+          <Button variant="outline" className="h-12 bg-transparent">
+            분쟁 처리
+          </Button>
+          <Button variant="outline" className="h-12 bg-transparent">
+            리포트 생성
+          </Button>
         </div>
+
+        {/* Sales Chart */}
+        <Card>
+          <CardHeader>
+            <CardTitle>매출 추이</CardTitle>
+            <CardDescription>최근 5일간의 매출 및 거래 현황</CardDescription>
+          </CardHeader>
+          <CardContent>
+            <div className="h-[300px] w-full">
+              <LineChart width={800} height={300} data={salesData}>
+                <Line type="monotone" dataKey="revenue" stroke="#8884d8" strokeWidth={2} />
+              </LineChart>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     </div>
   )
