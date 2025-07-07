@@ -1,0 +1,1 @@
+"-- MarketAI Database Schema"

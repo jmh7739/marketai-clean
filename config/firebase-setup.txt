@@ -1,0 +1,42 @@
+=== FIREBASE 설정 정보 ===
+
+프로젝트 이름: MarketAI Web
+프로젝트 ID: marketai-auction
+지역: asia-northeast3 (서울)
+
+=== Firebase 설정 코드 ===
+const firebaseConfig = {
+  apiKey: "AIzaSyB8-Mg4Ol9lM4R6mMVuwt64jlST97GRjog",
+  authDomain: "marketai-auction.firebaseapp.com",
+  projectId: "marketai-auction",
+  storageBucket: "marketai-auction.firebasestorage.app",
+  messagingSenderId: "413550271948",
+  appId: "1:413550271948:web:b8df85cf7415d5dc995169",
+  measurementId: "G-22JEGEC53V"
+};
+
+=== Authentication 설정 ===
+- 전화번호 인증: ✅ 활성화됨
+- reCAPTCHA: ✅ 자동 설정됨
+- 테스트 전화번호: +82 10 1234 5678 (인증코드: 123456)
+
+=== 승인된 도메인 추가 필요 ===
+Firebase Console → Authentication → Settings → Authorized domains
+다음 도메인들 추가:
+- localhost (개발용)
+- your-vercel-domain.vercel.app (배포용)
+- 커스텀 도메인 (있다면)
+
+=== 필요한 npm 패키지 ===
+npm install firebase
+
+=== 설정 완료 사항 ===
+- [x] Firebase 프로젝트 생성
+- [x] Authentication 활성화
+- [x] 전화번호 인증 설정
+- [x] 웹 앱 등록
+- [ ] 승인된 도메인 추가 (배포 후)
+- [x] 환경 변수 설정
+
+=== Firebase Console 링크 ===
+https://console.firebase.google.com/project/marketai-auction
