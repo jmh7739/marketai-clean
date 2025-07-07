@@ -3,12 +3,14 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
-import { Gavel, ArrowLeft, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react"
+import { Gavel, ArrowLeft, CheckCircle, Eye, EyeOff } from "lucide-react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { generateId, saveUser, getUsers, setCurrentUser } from "@/lib/utils"
+import { Label } from "@/components/ui/label"
+import { Alert, AlertDescription } from "@/components/ui/alert"
 // Firebase 관련 헬퍼를 단일 모듈에서 가져오도록 경로 수정
 import { setupRecaptcha, sendPhoneVerification, verifyPhoneCode, checkFirebaseConnection } from "@/lib/firebase"
 
@@ -330,21 +332,19 @@ export default function SignupPage() {
         <Card className="shadow-lg">
           <CardHeader className="space-y-1">
             <CardTitle className="text-xl text-center">계정 만들기</CardTitle>
+            <CardDescription>새 계정을 만드세요</CardDescription>
           </CardHeader>
           <CardContent>
             {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-md flex items-center space-x-2 text-red-700">
-                <AlertCircle className="h-4 w-4" />
-                <span className="text-sm">{error}</span>
-              </div>
+              <Alert variant="destructive">
+                <AlertDescription>{error}</AlertDescription>
+              </Alert>
             )}
 
             <form onSubmit={handleSubmit} className="space-y-4">
               {/* 아이디 */}
               <div className="space-y-2">
-                <label htmlFor="username" className="text-sm font-medium text-gray-700">
-                  아이디 *
-                </label>
+                <Label htmlFor="username">아이디 *</Label>
                 <Input
                   id="username"
                   name="username"
@@ -360,9 +360,7 @@ export default function SignupPage() {
 
               {/* 이메일 */}
               <div className="space-y-2">
-                <label htmlFor="email" className="text-sm font-medium text-gray-700">
-                  이메일 *
-                </label>
+                <Label htmlFor="email">이메일 *</Label>
                 <Input
                   id="email"
                   name="email"
@@ -378,9 +376,7 @@ export default function SignupPage() {
 
               {/* 전화번호 + 인증번호 받기 */}
               <div className="space-y-2">
-                <label htmlFor="phone" className="text-sm font-medium text-gray-700">
-                  전화번호 *
-                </label>
+                <Label htmlFor="phone">전화번호 *</Label>
                 <div className="flex space-x-2">
                   <Input
                     id="phone"
@@ -423,9 +419,7 @@ export default function SignupPage() {
               {/* 인증번호 입력 (인증번호 발송 후에만 표시) */}
               {isCodeSent && !isPhoneVerified && (
                 <div className="space-y-2">
-                  <label htmlFor="verificationCode" className="text-sm font-medium text-gray-700">
-                    인증번호 *
-                  </label>
+                  <Label htmlFor="verificationCode">인증번호 *</Label>
                   <div className="flex space-x-2">
                     <Input
                       id="verificationCode"
@@ -453,9 +447,7 @@ export default function SignupPage() {
 
               {/* 비밀번호 */}
               <div className="space-y-2">
-                <label htmlFor="password" className="text-sm font-medium text-gray-700">
-                  비밀번호 *
-                </label>
+                <Label htmlFor="password">비밀번호 *</Label>
                 <div className="relative">
                   <Input
                     id="password"
@@ -484,9 +476,7 @@ export default function SignupPage() {
 
               {/* 비밀번호 확인 */}
               <div className="space-y-2">
-                <label htmlFor="confirmPassword" className="text-sm font-medium text-gray-700">
-                  비밀번호 확인 *
-                </label>
+                <Label htmlFor="confirmPassword">비밀번호 확인 *</Label>
                 <div className="relative">
                   <Input
                     id="confirmPassword"
