@@ -9,7 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 
 export const metadata: Metadata = {
   title: "MarketAI - AI-Powered Auction Platform",
-  description: "The future of online auctions with AI-powered recommendations and real-time bidding",
+  description: "Experience the future of online auctions with AI-powered recommendations and real-time bidding.",
     generator: 'v0.dev'
 }
 

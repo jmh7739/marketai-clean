@@ -105,6 +105,46 @@ export async function saveUser(userData: Partial<User>) {
   return data
 }
 
+// 추가 함수들 (import 오류 해결용)
+export async function upsertUser(userData: Partial<User>) {
+  return saveUser(userData)
+}
+
+export async function getUserByFirebaseUid(firebaseUid: string) {
+  if (!supabase) return null
+
+  const { data, error } = await supabase.from("users").select("*").eq("firebase_uid", firebaseUid).single()
+
+  if (error) {
+    console.error("Error fetching user by Firebase UID:", error)
+    return null
+  }
+
+  return data
+}
+
+export async function testSupabaseConnection() {
+  if (!supabase) {
+    return { success: false, error: "Supabase not configured" }
+  }
+
+  try {
+    const { data, error } = await supabase.from("users").select("count").limit(1)
+    if (error) throw error
+    return { success: true, data }
+  } catch (error: any) {
+    return { success: false, error: error.message }
+  }
+}
+
+export function validateSupabaseConfig() {
+  return {
+    isConfigured: Boolean(supabaseUrl && supabaseAnonKey),
+    url: supabaseUrl,
+    hasKey: Boolean(supabaseAnonKey),
+  }
+}
+
 // 경매 관련 함수들
 export async function getAuctions() {
   if (!supabase) return []

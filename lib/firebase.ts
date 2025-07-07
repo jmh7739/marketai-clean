@@ -151,6 +151,21 @@ export async function verifyPhoneCode(confirm: any, code: string) {
   return result.user
 }
 
+// 추가 함수들 (import 오류 해결용)
+export async function clearRecaptcha() {
+  // reCAPTCHA 정리 함수
+  const containers = document.querySelectorAll('[id*="recaptcha"]')
+  containers.forEach((container) => {
+    container.innerHTML = ""
+  })
+}
+
+export const verifySMSCode = verifyPhoneCode
+
+export async function testFirebaseConnection() {
+  return checkFirebaseConnection()
+}
+
 /* -------------------------------------------------------------------------- */
 /*                               Auth Helpers                                 */
 /* -------------------------------------------------------------------------- */
