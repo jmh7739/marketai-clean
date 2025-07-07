@@ -1,53 +1,50 @@
 export interface AdminStats {
   totalUsers: number
-  totalAuctions: number
+  activeAuctions: number
   totalRevenue: number
-  activeUsers: number
   pendingDisputes: number
-  completedTransactions: number
+  monthlyGrowth: number
+  successfulTransactions: number
 }
 
 export interface SalesData {
-  date: string
+  month: string
+  sales: number
   revenue: number
-  transactions: number
-  users: number
 }
 
 export interface ReportData {
   id: string
   title: string
-  type: "sales" | "users" | "auctions" | "disputes"
-  dateRange: {
-    start: string
-    end: string
-  }
-  data: any[]
+  type: "sales" | "users" | "disputes" | "revenue"
+  dateRange: string
+  status: "completed" | "pending" | "failed"
   createdAt: string
-  createdBy: string
-  status: "generating" | "completed" | "failed"
+  data: any
 }
 
 export interface UserData {
   id: string
-  email: string
   name: string
-  phone?: string
-  createdAt: string
-  lastLogin: string
+  email: string
+  phone: string
   joinDate: string
-  status: "active" | "suspended" | "pending"
+  status: "active" | "suspended" | "banned"
+  totalPurchases: number
+  totalSales: number
   avatar?: string
-  totalPurchases?: number
-  totalSales?: number
+  verified: boolean
+  rating: number
 }
 
 export interface AuctionData {
   id: string
   title: string
-  seller: string
   currentBid: number
-  endDate: string
-  status: "active" | "completed" | "cancelled"
+  endTime: string
+  status: "active" | "ended" | "cancelled"
+  sellerId: string
+  sellerName: string
+  category: string
   bidCount: number
 }
