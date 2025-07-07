@@ -399,3 +399,6 @@ export function onAuthStateChange(callback: (user: any) => void) {
 
   return () => subscription.unsubscribe()
 }
+
+// DB 인스턴스 export 추가 (다른 파일에서 사용할 수 있도록)
+export { supabase as db }
