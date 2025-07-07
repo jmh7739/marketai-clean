@@ -1,189 +1,317 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Search, MoreHorizontal, Ban, CheckCircle, Users } from "lucide-react"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog"
+import { Search, Filter, MoreHorizontal, UserPlus, Mail, Phone } from "lucide-react"
 import type { UserData } from "@/types/admin"
 
 export default function UserManagement() {
   const [users, setUsers] = useState<UserData[]>([])
+  const [filteredUsers, setFilteredUsers] = useState<UserData[]>([])
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [isLoading, setIsLoading] = useState(true)
+  const [statusFilter, setStatusFilter] = useState<string>("all")
+  const [loading, setLoading] = useState(true)
 
+  // Mock data - replace with actual API call
   useEffect(() => {
-    const loadUsers = async () => {
-      setIsLoading(true)
-      try {
-        // 실제 환경에서는 API 호출
-        // const response = await fetch('/api/admin/users')
-        // const data = await response.json()
-        // setUsers(data)
+    const mockUsers: UserData[] = [
+      {
+        id: "1",
+        name: "John Doe",
+        email: "john@example.com",
+        phone: "+1-555-0123",
+        createdAt: "2024-01-15T10:30:00Z",
+        lastLogin: "2024-01-20T14:22:00Z",
+        joinDate: "2024-01-15",
+        status: "active",
+        avatar: "/placeholder.svg?height=40&width=40",
+        totalPurchases: 5,
+        totalSales: 12,
+      },
+      {
+        id: "2",
+        name: "Jane Smith",
+        email: "jane@example.com",
+        phone: "+1-555-0124",
+        createdAt: "2024-01-10T09:15:00Z",
+        lastLogin: "2024-01-19T16:45:00Z",
+        joinDate: "2024-01-10",
+        status: "active",
+        avatar: "/placeholder.svg?height=40&width=40",
+        totalPurchases: 8,
+        totalSales: 3,
+      },
+      {
+        id: "3",
+        name: "Bob Johnson",
+        email: "bob@example.com",
+        createdAt: "2024-01-05T11:20:00Z",
+        lastLogin: "2024-01-18T12:30:00Z",
+        joinDate: "2024-01-05",
+        status: "suspended",
+        avatar: "/placeholder.svg?height=40&width=40",
+        totalPurchases: 2,
+        totalSales: 0,
+      },
+    ]
 
-        // 현재는 빈 배열로 시작
-        setUsers([])
-      } catch (error) {
-        console.error("사용자 데이터 로딩 실패:", error)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
-    loadUsers()
+    setTimeout(() => {
+      setUsers(mockUsers)
+      setFilteredUsers(mockUsers)
+      setLoading(false)
+    }, 1000)
   }, [])
 
-  const getStatusBadge = (status: string) => {
+  // Filter users based on search term and status
+  useEffect(() => {
+    let filtered = users
+
+    if (searchTerm) {
+      filtered = filtered.filter(
+        (user) =>
+          user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          user.email.toLowerCase().includes(searchTerm.toLowerCase()),
+      )
+    }
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((user) => user.status === statusFilter)
+    }
+
+    setFilteredUsers(filtered)
+  }, [users, searchTerm, statusFilter])
+
+  const getStatusColor = (status: string) => {
     switch (status) {
       case "active":
-        return <Badge className="bg-green-500">활성</Badge>
+        return "bg-green-100 text-green-800"
       case "suspended":
-        return <Badge className="bg-yellow-500">정지</Badge>
-      case "banned":
-        return <Badge variant="destructive">차단</Badge>
+        return "bg-red-100 text-red-800"
+      case "pending":
+        return "bg-yellow-100 text-yellow-800"
       default:
-        return <Badge variant="outline">알 수 없음</Badge>
+        return "bg-gray-100 text-gray-800"
     }
   }
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchTerm.toLowerCase())
-    const matchesStatus = statusFilter === "all" || user.status === statusFilter
-    return matchesSearch && matchesStatus
-  })
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleDateString("ko-KR", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    })
+  }
 
-  if (isLoading) {
+  if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">사용자 데이터 로딩 중...</p>
-        </div>
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-gray-900"></div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="max-w-7xl mx-auto px-4 py-6">
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">사용자 관리</h1>
-          <p className="text-gray-600">플랫폼 사용자 관리</p>
+    <div className="container mx-auto p-6 space-y-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-3xl font-bold">사용자 관리</h1>
+          <p className="text-gray-600">플랫폼 사용자들을 관리하고 모니터링하세요</p>
         </div>
+        <Button>
+          <UserPlus className="mr-2 h-4 w-4" />새 사용자 추가
+        </Button>
+      </div>
 
-        {/* 필터 및 검색 */}
-        <Card className="mb-6">
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                  <Input
-                    placeholder="이름 또는 이메일로 검색..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
-                  />
-                </div>
-              </div>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="w-full md:w-48">
-                  <SelectValue placeholder="상태 필터" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">전체</SelectItem>
-                  <SelectItem value="active">활성</SelectItem>
-                  <SelectItem value="suspended">정지</SelectItem>
-                  <SelectItem value="banned">차단</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* 사용자 목록 */}
+      {/* Stats Cards */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
         <Card>
-          <CardHeader>
-            <CardTitle>사용자 목록 ({filteredUsers.length}명)</CardTitle>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">전체 사용자</CardTitle>
           </CardHeader>
           <CardContent>
-            {filteredUsers.length > 0 ? (
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b">
-                      <th className="text-left py-3 px-4">사용자</th>
-                      <th className="text-left py-3 px-4">연락처</th>
-                      <th className="text-left py-3 px-4">가입일</th>
-                      <th className="text-left py-3 px-4">거래 현황</th>
-                      <th className="text-left py-3 px-4">상태</th>
-                      <th className="text-left py-3 px-4">마지막 활동</th>
-                      <th className="text-left py-3 px-4">액션</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredUsers.map((user) => (
-                      <tr key={user.id} className="border-b hover:bg-gray-50">
-                        <td className="py-4 px-4">
-                          <div>
-                            <p className="font-medium">{user.name}</p>
-                            <p className="text-sm text-gray-500">{user.email}</p>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <p className="text-sm">{user.phone}</p>
-                        </td>
-                        <td className="py-4 px-4">
-                          <p className="text-sm">{user.joinDate}</p>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="text-sm">
-                            <p>구매: {user.totalPurchases}회</p>
-                            <p>판매: {user.totalSales}회</p>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">{getStatusBadge(user.status)}</td>
-                        <td className="py-4 px-4">
-                          <p className="text-sm">{user.lastActive}</p>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div className="flex space-x-2">
-                            {user.status === "active" ? (
-                              <Button size="sm" variant="outline">
-                                <Ban className="w-4 h-4 mr-1" />
-                                정지
-                              </Button>
-                            ) : (
-                              <Button size="sm" variant="outline">
-                                <CheckCircle className="w-4 h-4 mr-1" />
-                                해제
-                              </Button>
-                            )}
-                            <Button size="sm" variant="outline">
-                              <MoreHorizontal className="w-4 h-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ) : (
-              <div className="text-center py-12 text-gray-500">
-                <Users className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                <h3 className="text-lg font-medium mb-2">등록된 사용자가 없습니다</h3>
-                <p>사용자가 가입하면 여기에 표시됩니다.</p>
-              </div>
-            )}
+            <div className="text-2xl font-bold">{users.length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">활성 사용자</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{users.filter((u) => u.status === "active").length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">정지된 사용자</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{users.filter((u) => u.status === "suspended").length}</div>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">대기 중</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{users.filter((u) => u.status === "pending").length}</div>
           </CardContent>
         </Card>
       </div>
+
+      {/* Filters */}
+      <Card>
+        <CardHeader>
+          <CardTitle>사용자 목록</CardTitle>
+          <CardDescription>등록된 모든 사용자를 확인하고 관리할 수 있습니다</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex flex-col sm:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="사용자 이름 또는 이메일로 검색..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <Filter className="mr-2 h-4 w-4" />
+                <SelectValue placeholder="상태 필터" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">모든 상태</SelectItem>
+                <SelectItem value="active">활성</SelectItem>
+                <SelectItem value="suspended">정지</SelectItem>
+                <SelectItem value="pending">대기</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>사용자</TableHead>
+                  <TableHead>연락처</TableHead>
+                  <TableHead>가입일</TableHead>
+                  <TableHead>마지막 로그인</TableHead>
+                  <TableHead>상태</TableHead>
+                  <TableHead>활동</TableHead>
+                  <TableHead className="text-right">작업</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredUsers.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div className="flex items-center space-x-3">
+                        <Avatar>
+                          <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+                          <AvatarFallback>
+                            {user.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <div className="font-medium">{user.name}</div>
+                          <div className="text-sm text-gray-500">{user.email}</div>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="space-y-1">
+                        <div className="flex items-center text-sm">
+                          <Mail className="mr-1 h-3 w-3" />
+                          {user.email}
+                        </div>
+                        {user.phone && (
+                          <div className="flex items-center text-sm text-gray-500">
+                            <Phone className="mr-1 h-3 w-3" />
+                            {user.phone}
+                          </div>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">{formatDate(user.joinDate)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm">{formatDate(user.lastLogin)}</div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(user.status)}>
+                        {user.status === "active" ? "활성" : user.status === "suspended" ? "정지" : "대기"}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="text-sm space-y-1">
+                        <div>구매: {user.totalPurchases || 0}회</div>
+                        <div>판매: {user.totalSales || 0}회</div>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Dialog>
+                        <DialogTrigger asChild>
+                          <Button variant="ghost" size="sm">
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent>
+                          <DialogHeader>
+                            <DialogTitle>사용자 관리</DialogTitle>
+                            <DialogDescription>{user.name}님의 계정을 관리합니다</DialogDescription>
+                          </DialogHeader>
+                          <div className="space-y-4">
+                            <Button variant="outline" className="w-full bg-transparent">
+                              프로필 보기
+                            </Button>
+                            <Button variant="outline" className="w-full bg-transparent">
+                              메시지 보내기
+                            </Button>
+                            {user.status === "active" ? (
+                              <Button variant="destructive" className="w-full">
+                                계정 정지
+                              </Button>
+                            ) : (
+                              <Button variant="default" className="w-full">
+                                계정 활성화
+                              </Button>
+                            )}
+                          </div>
+                        </DialogContent>
+                      </Dialog>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+
+          {filteredUsers.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-gray-500">검색 결과가 없습니다.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
     </div>
   )
 }

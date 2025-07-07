@@ -32,9 +32,14 @@ export interface UserData {
   id: string
   email: string
   name: string
+  phone?: string
   createdAt: string
   lastLogin: string
+  joinDate: string
   status: "active" | "suspended" | "pending"
+  avatar?: string
+  totalPurchases?: number
+  totalSales?: number
 }
 
 export interface AuctionData {
