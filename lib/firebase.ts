@@ -143,6 +143,8 @@ export async function sendPhoneVerification(phone: string, verifier: any) {
   return signInWithPhoneNumber(auth, phone, verifier)
 }
 
+export const sendSMSVerification = sendPhoneVerification
+
 export async function verifyPhoneCode(confirm: any, code: string) {
   if (!isBrowser()) throw new Error("This function can only run in the browser")
   const result = await confirm.confirm(code)
@@ -396,3 +398,5 @@ export function checkFirebaseConnection() {
     },
   }
 }
+
+export { auth }

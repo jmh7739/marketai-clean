@@ -231,6 +231,29 @@ export function formatPrice(value?: number | null) {
 }
 
 /**
+ * formatCurrency 별칭 (formatPrice와 동일)
+ */
+export const formatCurrency = formatPrice
+
+/**
+ * 상대적 시간을 "2일 전", "3시간 전" 형식으로 반환
+ */
+export function formatRelativeTime(dateString: string) {
+  const date = new Date(dateString)
+  const now = new Date()
+  const diff = now.getTime() - date.getTime()
+
+  const minutes = Math.floor(diff / (1000 * 60))
+  const hours = Math.floor(diff / (1000 * 60 * 60))
+  const days = Math.floor(diff / (1000 * 60 * 60 * 24))
+
+  if (days > 0) return `${days}일 전`
+  if (hours > 0) return `${hours}시간 전`
+  if (minutes > 0) return `${minutes}분 전`
+  return "방금 전"
+}
+
+/**
  * 종료 시각(endDate)까지 남은 시간을 “2일 3 시간 4 분” 형식으로 반환
  */
 export function formatTimeLeft(endDate: string) {
@@ -249,4 +272,12 @@ export function formatTimeLeft(endDate: string) {
   parts.push(`${minutes}분`)
 
   return parts.join(" ")
+}
+
+/**
+ * 현재 사용자 완전 삭제
+ */
+export function clearCurrentUser(): void {
+  if (typeof window === "undefined") return
+  setCurrentUser(null)
 }
