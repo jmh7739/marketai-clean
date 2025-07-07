@@ -14,6 +14,20 @@ export interface SalesData {
   users: number
 }
 
+export interface ReportData {
+  id: string
+  title: string
+  type: "sales" | "users" | "auctions" | "disputes"
+  dateRange: {
+    start: string
+    end: string
+  }
+  data: any[]
+  createdAt: string
+  createdBy: string
+  status: "generating" | "completed" | "failed"
+}
+
 export interface UserData {
   id: string
   email: string
